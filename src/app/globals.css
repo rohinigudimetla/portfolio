@@ -1,35 +1,28 @@
 @import "tailwindcss";
 
 /* ============================================================
-   THREE INKS
+   FOUR INKS
 
-   This page is printed, not painted. Three spot inks on
-   uncoated stock, the way a mid-century picture book was
-   actually made. Every colour below is one of those three or a
-   true overprint of two of them, which is the only way a fourth
-   tone exists on a three-colour press.
+   Printed, not painted. Every colour on the page is one of these
+   four. No gradients, no shadows, no blur. Flat fields, square
+   corners, 1px rules.
 
-   No gradients. No shadows. No blur. Flat fields only.
+   Contrast note: ember is a mid tone. Nothing in the set reaches
+   4.5:1 against it, so ember never carries body copy. It is a
+   field and a display colour, and text on an ember page sits in
+   a bark plate.
    ============================================================ */
 @theme {
-  /* the three inks, as specified */
-  --color-forest: #334736;
-  --color-paper: #eeebd3;
-  --color-flame: #e3655b;
-
-  /* overprints: what happens where two inks land on each other */
-  --color-forest-flame: #2c2a24; /* forest over flame */
-  --color-flame-paper: #e9a08f; /* flame at half coverage on paper */
-  --color-forest-paper: #7e8a70; /* forest at half coverage on paper */
-
-  /* the press's own black, for type that has to hold on flame */
-  --color-ink: #16190f;
+  --color-bark: #2a2d1d; /* dark olive, the primary ground */
+  --color-moss: #6f6f52; /* mid olive, rules and secondary ink */
+  --color-butter: #fce7bc; /* pale cream, the paper ground */
+  --color-ember: #c94c38; /* terracotta, the accent and the loud field */
+  /* Moss is too dark to carry text on bark (2.7:1). This is the same hue
+     lifted to 4.9:1, for labels and secondary copy on the dark ground. */
+  --color-moss-lit: #9a9a78;
 
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-
-  /* Sharp. A cut-paper shape has no corner radius. */
-  --radius-plate: 0px;
 }
 
 *,
@@ -39,14 +32,14 @@
 }
 
 html {
-  background-color: var(--color-forest);
+  background-color: var(--color-bark);
   -webkit-font-smoothing: antialiased;
 }
 
 body {
   margin: 0;
-  background-color: var(--color-forest);
-  color: var(--color-paper);
+  background-color: var(--color-bark);
+  color: var(--color-butter);
   font-family: var(--font-sans);
   font-synthesis-weight: none;
 }
@@ -55,13 +48,13 @@ body {
    Browser surfaces, inked rather than left to the browser.
    ------------------------------------------------------------ */
 ::selection {
-  background: var(--color-flame);
-  color: var(--color-ink);
+  background: var(--color-ember);
+  color: var(--color-butter);
 }
 
 :root {
-  accent-color: var(--color-flame);
-  caret-color: var(--color-flame);
+  accent-color: var(--color-ember);
+  caret-color: var(--color-ember);
   scrollbar-width: none;
 }
 
@@ -71,8 +64,8 @@ body {
 }
 
 :focus-visible {
-  outline: 3px solid var(--color-flame);
-  outline-offset: 2px;
+  outline: 3px solid var(--color-ember);
+  outline-offset: 3px;
 }
 
 a {
@@ -87,14 +80,14 @@ a {
 .t-poster {
   font-weight: 700;
   letter-spacing: -0.035em;
-  line-height: 0.92;
+  line-height: 0.94;
   text-wrap: balance;
 }
 
 .t-lead {
   font-weight: 600;
   letter-spacing: -0.025em;
-  line-height: 1.12;
+  line-height: 1.14;
   text-wrap: balance;
 }
 
@@ -110,18 +103,6 @@ a {
   font-weight: 400;
   line-height: 1.62;
   letter-spacing: -0.003em;
-}
-
-/* ============================================================
-   PRESS
-   Misregistration: the second ink lands a hair off the first.
-   One device, used on the cover and nowhere else.
-   ============================================================ */
-.plate-shift {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  user-select: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

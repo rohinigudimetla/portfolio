@@ -66,8 +66,8 @@ export default function Voronoi({
       });
 
       const group = new scope.Group();
-      const stroke = new scope.Color("#7e8a70");
-      const warm = new scope.Color("#e3655b");
+      const stroke = new scope.Color("#6f6f52");
+      const warm = new scope.Color("#c94c38");
 
       const draw = (time: number) => {
         const pts: [number, number][] = seeds.map((s) => {
@@ -101,8 +101,8 @@ export default function Voronoi({
           // Cell walls, not a wireframe: thin, soft, mostly sage with the
           // occasional warm one so the mesh is not one flat tone.
           path.strokeColor = i % 7 === 0 ? warm : stroke;
-          path.strokeWidth = i % 5 === 0 ? 0.9 : 0.55;
-          path.opacity = i % 7 === 0 ? 0.5 : 0.85;
+          path.strokeWidth = i % 5 === 0 ? 1.6 : 1;
+          path.opacity = i % 7 === 0 ? 0.62 : 1;
           group.addChild(path);
         }
       };

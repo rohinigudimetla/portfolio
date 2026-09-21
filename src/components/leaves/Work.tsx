@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ArrowUpRight } from "@phosphor-icons/react";
 import Voronoi from "../Voronoi";
+import NameMark from "../NameMark";
 import {
   Dialog,
   DialogContent,
@@ -44,12 +45,24 @@ export default function Work() {
     <div
       ref={root}
       className="relative h-full w-full overflow-hidden"
-      style={{ background: "var(--color-forest)" }}
+      style={{ background: "var(--color-butter)" }}
     >
-      <Voronoi cells={34} opacity={0.08} />
+      <Voronoi cells={26} opacity={0.22} />
+      <NameMark tone="var(--color-moss)" />
+
+      {/* Small, in the margin. Not a hero. */}
+      <img
+        src="/laptop.webp"
+        alt=""
+        aria-hidden="true"
+        width={360}
+        height={329}
+        className="pointer-events-none absolute right-[6vw] bottom-[9vh] w-[clamp(120px,16vw,230px)] select-none"
+        style={{ transform: "rotate(3deg)" }}
+      />
 
       <div className="relative z-10 flex h-full flex-col justify-center px-[7vw] pb-[6vh] sm:px-[6vw]">
-        <p className="t-meta mb-12" style={{ color: "var(--color-flame)" }}>
+        <p className="t-meta mb-12" style={{ color: "var(--color-ember)" }}>
           Selected work
         </p>
 
@@ -62,24 +75,24 @@ export default function Work() {
                 className="group flex w-full cursor-pointer items-baseline justify-between gap-6
                            border-0 border-t bg-transparent py-7 text-left
                            transition-colors duration-200
-                           hover:bg-[var(--color-flame)]/10
-                           focus-visible:outline-3 focus-visible:outline-[var(--color-flame)]"
-                style={{ borderTopColor: "var(--color-forest-paper)", borderTopWidth: 1 }}
+                           hover:bg-[var(--color-ember)]/12
+                           focus-visible:outline-3 focus-visible:outline-[var(--color-ember)]"
+                style={{ borderTopColor: "var(--color-moss)", borderTopWidth: 1 }}
               >
                 <span className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
                   <span
-                    className="t-lead text-[clamp(1.6rem,4.4vw,3rem)] transition-colors duration-200 group-hover:text-[var(--color-flame)]"
-                    style={{ color: "var(--color-paper)" }}
+                    className="t-lead text-[clamp(1.6rem,4.4vw,3rem)] transition-colors duration-200 group-hover:text-[var(--color-ember)]"
+                    style={{ color: "var(--color-bark)" }}
                   >
                     {e.title}
                   </span>
-                  <span className="t-meta" style={{ color: "var(--color-forest-paper)" }}>
+                  <span className="t-meta" style={{ color: "var(--color-moss)" }}>
                     {e.kind}
                   </span>
                 </span>
                 <span
                   className="t-meta shrink-0"
-                  style={{ color: "var(--color-flame)" }}
+                  style={{ color: "var(--color-ember)" }}
                 >
                   {e.when}
                 </span>
@@ -89,7 +102,7 @@ export default function Work() {
         </ul>
         <div
           aria-hidden="true"
-          style={{ borderTop: "1px solid var(--color-forest-paper)" }}
+          style={{ borderTop: "1px solid var(--color-moss)" }}
         />
       </div>
 
@@ -99,13 +112,13 @@ export default function Work() {
             <div className="mx-auto w-full max-w-[46rem] px-[7vw] py-[12vh] sm:px-8">
               <DialogTitle
                 className="t-poster text-[clamp(2.2rem,6vw,4rem)]"
-                style={{ color: "var(--color-forest)" }}
+                style={{ color: "var(--color-bark)" }}
               >
                 {open.title}
               </DialogTitle>
               <DialogDescription
                 className="t-meta mt-4"
-                style={{ color: "var(--color-flame)" }}
+                style={{ color: "var(--color-ember)" }}
               >
                 {open.kind} / {open.when}
               </DialogDescription>
@@ -115,7 +128,7 @@ export default function Work() {
                   <p
                     key={i}
                     className="t-body text-[1.02rem]"
-                    style={{ color: "var(--color-forest)" }}
+                    style={{ color: "var(--color-bark)" }}
                   >
                     {d}
                   </p>
@@ -127,7 +140,7 @@ export default function Work() {
                   <li
                     key={s}
                     className="t-meta"
-                    style={{ color: "var(--color-forest-paper)" }}
+                    style={{ color: "var(--color-moss)" }}
                   >
                     {s}
                   </li>
@@ -143,8 +156,8 @@ export default function Work() {
                     rel="noreferrer noopener"
                     className="t-meta inline-flex items-center gap-2 px-5 py-3 transition-colors duration-150"
                     style={{
-                      background: "var(--color-forest)",
-                      color: "var(--color-paper)",
+                      background: "var(--color-bark)",
+                      color: "var(--color-butter)",
                     }}
                   >
                     {l.label}

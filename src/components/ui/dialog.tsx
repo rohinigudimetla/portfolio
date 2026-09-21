@@ -27,7 +27,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-[80] bg-[var(--color-ink)]/80",
+      "fixed inset-0 z-[80] bg-[var(--color-bark)]/85",
       "data-[state=open]:animate-in data-[state=closed]:animate-out",
       "data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0",
       className,
@@ -49,7 +49,7 @@ const DialogContent = React.forwardRef<
       ref={ref}
       className={cn(
         "fixed inset-0 z-[90] overflow-y-auto",
-        "bg-[var(--color-paper)] text-[var(--color-forest)]",
+        "bg-[var(--color-butter)] text-[var(--color-bark)]",
         "focus:outline-none",
         className,
       )}
@@ -59,10 +59,10 @@ const DialogContent = React.forwardRef<
       <DialogPrimitive.Close
         aria-label={closeLabel}
         className="fixed top-6 right-6 z-10 flex h-12 w-12 items-center justify-center
-                   bg-[var(--color-forest)] text-[var(--color-paper)]
+                   bg-[var(--color-bark)] text-[var(--color-butter)]
                    transition-colors duration-150
-                   hover:bg-[var(--color-flame)] hover:text-[var(--color-ink)]
-                   focus-visible:outline-3 focus-visible:outline-[var(--color-flame)]
+                   hover:bg-[var(--color-ember)] hover:text-[var(--color-butter)]
+                   focus-visible:outline-3 focus-visible:outline-[var(--color-ember)]
                    sm:top-10 sm:right-10"
       >
         <X size={20} weight="bold" />

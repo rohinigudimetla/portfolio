@@ -18,15 +18,20 @@ npm run start
 
 ## The turn
 
-`src/components/Book.tsx` stacks every leaf in one pinned viewport and gives
-each a slice of the page's scroll progress. Inside its slice a leaf rotates
-on `rotateX` about `50% 0%`, so the bottom edge lifts toward the reader and
-goes over the top. A shadow gradient deepens as it turns and a warm crease
-runs along the lifting edge.
+`src/components/Book.tsx` stacks the leaves in one pinned stage and scrubs a
+single GSAP timeline that hinges each one at its top edge.
 
-Scroll distance is one viewport per leaf. The last leaf never turns. Under
-`prefers-reduced-motion` the whole thing degrades to ordinary stacked
-sections.
+Two settings matter and are easy to get wrong:
+
+- `pinSpacing: false`, because the wrapper already supplies the scroll
+  length. With the default, ScrollTrigger adds its own spacer on top and the
+  document comes out twice as long as intended.
+- `snap.directional: false`, so a released scroll goes to the nearest rest
+  point. The directional default pushes past the leaf you just arrived at.
+
+Each turn owns exactly one timeline unit, so rest positions land on clean
+fractions and the page can never sit half turned.
+
 
 ## What draws what
 
@@ -42,18 +47,21 @@ unreachable from this environment, so the primitives are composed directly.
 
 ## Palette
 
-Three spot inks, the way a mid-century picture book was actually printed.
-Everything on the page is one of these or a true overprint of two.
+Four inks. Flat fields, square corners, 1px rules, no gradients or shadows.
+Colour commits at page scale: each leaf gives its whole ground to one ink.
 
 | Token | Value | Use |
 |---|---|---|
-| `forest` | `#334736` | ground for the cover and the work page |
-| `paper` | `#EEEBD3` | ground for the hello page, and type on forest |
-| `flame` | `#E3655B` | ground for the last page, plates and meta elsewhere |
-| `ink` | `#16190F` | press black, the only type that holds on flame |
+| `bark` | `#2A2D1D` | ground of the first leaf, and the plate on the last |
+| `moss` | `#6F6F52` | rules and secondary ink on light grounds |
+| `moss-lit` | `#9A9A78` | the same hue lifted to 4.9:1, for text on bark |
+| `butter` | `#FCE7BC` | ground of the work leaf, and type on bark |
+| `ember` | `#C94C38` | accent, and the full field of the last leaf |
 
-No gradients, no shadows, no blur. Flat fields, square corners, 1px rules.
-Colour commits at page scale: each leaf gives its whole ground to one ink.
+`ember` is a mid tone: nothing in the set reaches 4.5:1 against it, so it
+never carries body copy. On the ember leaf the text sits in a bark plate,
+and only the display line, which clears the 3:1 large-text rule, sits
+directly on the colour.
 
 
 ## Content

@@ -10,16 +10,14 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
 /**
  * The book.
  *
- * Leaves are stacked in one pinned stage. Scrolling scrubs a single GSAP
- * timeline that hinges each leaf at its top edge and swings it up and over,
- * revealing the leaf already sitting underneath.
+ * Leaves stack in one pinned stage. Scrolling scrubs a single timeline that
+ * hinges each leaf at its top edge and swings it up and over, revealing the
+ * leaf already sitting underneath.
  *
- * This is ScrollTrigger's own job, so ScrollTrigger does it: one pin, one
- * scrubbed timeline, `start: "top top"`. An earlier version drove the same
- * effect from scroll progress in React state and CSS transforms, which
- * recomputed on the main thread and stuttered under load.
- *
- * Scroll distance is one viewport per leaf. The last leaf never turns.
+ * Each turn owns exactly one timeline unit, so the rest positions land on
+ * clean fractions of progress and ScrollTrigger can snap to them. That snap
+ * is the point: released mid-turn, the page finishes the turn or falls back,
+ * and never sits half over.
  */
 export default function Book({ leaves }: { leaves: ReactNode[] }) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
@@ -32,8 +30,13 @@ export default function Book({ leaves }: { leaves: ReactNode[] }) {
 
       const sheets = gsap.utils.toArray<HTMLElement>("[data-leaf]");
       const shades = gsap.utils.toArray<HTMLElement>("[data-leaf-shade]");
+      const turns = sheets.length - 1;
+      if (turns < 1) return;
 
-      gsap.set(sheets, { transformOrigin: "50% 0%", transformStyle: "preserve-3d" });
+      gsap.set(sheets, {
+        transformOrigin: "50% 0%",
+        transformStyle: "preserve-3d",
+      });
 
       const tl = gsap.timeline({
         defaults: { ease: "none" },
@@ -41,23 +44,36 @@ export default function Book({ leaves }: { leaves: ReactNode[] }) {
           trigger: wrapRef.current,
           start: "top top",
           end: "bottom bottom",
-          scrub: 0.5,
+          scrub: 0.4,
           pin: stageRef.current,
+          // The wrapper already supplies the scroll length, so ScrollTrigger
+          // must not add its own spacer on top of it. With the default the
+          // document comes out twice as long as intended and every snap
+          // point lands on the wrong leaf.
+          pinSpacing: false,
           anticipatePin: 1,
           invalidateOnRefresh: true,
+          // One snap point per leaf. Nothing is allowed to rest mid-turn.
+          snap: {
+            snapTo: 1 / turns,
+            // Nearest point, not the next one along. ScrollTrigger's
+            // directional default pushes past the leaf you just arrived at.
+            directional: false,
+            duration: { min: 0.25, max: 0.6 },
+            delay: 0.05,
+            ease: "power2.inOut",
+          },
         },
       });
 
       sheets.forEach((sheet, i) => {
-        if (i === sheets.length - 1) return;
-        // The leaf rests for the first quarter of its slice, then goes over.
-        tl.to(sheet, { rotateX: 94, duration: 0.74, ease: "power1.in" }, i + 0.26)
-          .to(sheet, { y: -50, duration: 0.74 }, i + 0.26)
-          .to(shades[i], { opacity: 1, duration: 0.74 }, i + 0.26)
-          // Once a leaf is past the vertical it must stop taking clicks,
-          // or it keeps shadowing the page it just revealed. GSAP reverses
-          // this on the way back up.
-          .to(sheet, { pointerEvents: "none", duration: 0.01 }, i + 0.42);
+        if (i === turns) return;
+        tl.to(sheet, { rotateX: 94, duration: 1, ease: "power1.in" }, i)
+          .to(sheet, { y: -55, duration: 1 }, i)
+          .to(shades[i], { opacity: 1, duration: 1 }, i)
+          // Past the halfway point a leaf must stop taking clicks, or it
+          // keeps shadowing the page it just revealed.
+          .to(sheet, { pointerEvents: "none", duration: 0.01 }, i + 0.5);
       });
     },
     { scope: wrapRef, dependencies: [total] },
@@ -82,12 +98,11 @@ export default function Book({ leaves }: { leaves: ReactNode[] }) {
             style={{ zIndex: total - i, backfaceVisibility: "hidden" }}
           >
             {leaf}
-            {/* The face of the leaf turning away from the light. */}
             <div
               data-leaf-shade
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 z-50 opacity-0"
-              style={{ background: "var(--color-ink)" }}
+              style={{ background: "var(--color-bark)" }}
             />
           </div>
         ))}
