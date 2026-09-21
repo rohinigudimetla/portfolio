@@ -1,27 +1,25 @@
 import dynamic from "next/dynamic";
-import Nav from "@/components/Nav";
-import Hero from "@/components/sections/Hero";
-import Maker from "@/components/sections/Maker";
-import Work from "@/components/sections/Work";
-import Library from "@/components/sections/Library";
-import Closing from "@/components/sections/Closing";
+import Book from "@/components/Book";
+import Cover from "@/components/leaves/Cover";
+import Hello from "@/components/leaves/Hello";
+import Work from "@/components/leaves/Work";
+import Close from "@/components/leaves/Close";
 
-/**
- * The paper itself: procedural grain and the watercolour blooms that
- * answer a hover. Decorative, so it loads after everything readable.
- */
+/** Paper grain and the watercolour blooms that answer a hover. */
 const WashLayer = dynamic(() => import("@/components/WashLayer"));
 
 export default function Page() {
   return (
     <>
-      <Nav />
       <main>
-        <Hero />
-        <Maker />
-        <Work />
-        <Library />
-        <Closing />
+        <Book
+          leaves={[
+            <Cover key="cover" />,
+            <Hello key="hello" />,
+            <Work key="work" />,
+            <Close key="close" />,
+          ]}
+        />
       </main>
       <WashLayer />
     </>

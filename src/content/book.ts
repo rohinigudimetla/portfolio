@@ -1,11 +1,14 @@
 /**
- * Everything the page says, in one place.
- * Every factual claim here traces to the supplied resume.
+ * Everything the book says.
+ *
+ * The rule here is that a page shows almost nothing. Anything long lives in
+ * `detail`, which stays folded away until a reader asks for it.
+ * Every factual claim traces to the resume in /public.
  */
 
 export const person = {
   name: "Rohini Gudimetla",
-  role: "Full Stack Software Developer",
+  role: "software developer",
   place: "Boston, Massachusetts",
   email: "rohinigudimetla174@gmail.com",
   phone: "857-316-8283",
@@ -15,149 +18,82 @@ export const person = {
   github: "https://github.com/rohinigudimetla",
 };
 
-/** The one line under the name. Kept under twenty words on purpose. */
-export const hook =
-  "She builds production systems on Spring Boot and React, and writes down why every awkward decision went the way it did.";
+/** The one sentence on the first page. */
+export const hello = "hi, my name is Rohini and I'm a software developer.";
 
-/* ----------------------------------------------------------- The maker */
+/** Set beneath it, small. Four words, not a paragraph. */
+export const note = "I build things that stay up.";
 
-export const opening = {
-  lead: "Rohini builds software the way some people build furniture. Slowly, with the joints left showing.",
-  body: [
-    "She works in Spring Boot and React, keeps her data in PostgreSQL, and caches it in Redis. Most of what she has shipped runs on AWS, and it stays up.",
-    "The piece she is fondest of is a library application nobody commissioned. It carries distributed caching and a notification layer that replaced a polling loop. Alongside the code sit sixteen written records, each explaining why an awkward decision went the way it did.",
-    "She wrote those for whoever opens the repository after her.",
-  ],
-  margin: "Boston, by way of Bangalore",
-};
-
-export type ToolGroup = { heading: string; items: string[] };
-
-export const workbench: ToolGroup[] = [
-  { heading: "Languages", items: ["Java", "TypeScript", "JavaScript", "SQL"] },
-  {
-    heading: "Frameworks",
-    items: ["Spring Boot", "React", "Spring Security", "Hibernate"],
-  },
-  { heading: "Where data sleeps", items: ["PostgreSQL", "Redis"] },
-  {
-    heading: "Infrastructure",
-    items: [
-      "AWS (EC2, S3, RDS, CloudFront, CloudWatch)",
-      "Docker",
-      "Kubernetes",
-    ],
-  },
-  { heading: "Pipelines", items: ["GitHub Actions", "Maven", "Liquibase"] },
-  {
-    heading: "Proof",
-    items: ["JUnit 5", "Mockito", "Vitest", "React Testing Library"],
-  },
-];
-
-/* ----------------------------------------------------------------- Work */
-
-export type Post = {
-  role: string;
-  place: string;
+export type Entry = {
+  title: string;
+  kind: string;
   when: string;
   stack: string[];
   links: { label: string; href: string }[];
-  notes: string[];
+  /** Folded away. Shown only when a reader opens the entry. */
+  detail: string[];
 };
 
-export const posts: Post[] = [
+export const entries: Entry[] = [
   {
-    role: "Software Development Consultant",
-    place: "Cher Digital Analytics",
-    when: "Oct to Nov 2025",
-    stack: ["Next.js", "Supabase", "Vercel", "JavaScript"],
+    title: "Pocket Library",
+    kind: "Personal project",
+    when: "2025",
+    stack: ["Spring Boot", "PostgreSQL", "Redis", "Kubernetes", "AWS"],
     links: [
-      {
-        label: "See it live",
-        href: "https://cher-digi-analytics.vercel.app",
-      },
-      {
-        label: "Read the source",
-        href: "https://github.com/rohinigudimetla/cher-digi-analytics",
-      },
+      { label: "pocklib.site", href: "https://pocklib.site" },
+      { label: "GitHub", href: "https://github.com/rohinigudimetla/Pocket-Library" },
     ],
-    notes: [
-      "Built a client booking system in Next.js. A confirmed slot sends Google Calendar OAuth2 off to write the event, and Resend posts the confirmation to the client and the consultant both.",
-      "Laid the Supabase backend across four RLS-protected tables. Every read and write travels through a Next.js server route holding the service-role key, so no credential ever reaches the browser.",
-      "Three Vercel production builds failed on the way out, in Google OAuth2 initialization, a Resend dynamic import, and Supabase environment fallbacks. Each was traced and fixed, and the Next.js 15 application went live.",
+    detail: [
+      "Over-engineered on purpose. Sixteen architectural decision records sit beside the code, one for each trade-off worth arguing about.",
+      "Spring Boot runs on a minikube cluster on EC2 with liveness and readiness probes through Spring Actuator. A manual twelve-step SSH deploy became a four-minute GitHub Actions pipeline that rolls updates without dropping a request.",
+      "Fourteen REST endpoints on a repository-pattern architecture, seven Liquibase migrations carrying the schema, and all access through JPA and Hibernate.",
+      "An OWASP Top 10 audit shaped the security layer: role-based access, JWT with Redis-backed revocation on logout, and Bucket4j rate limiting in front of the login route.",
+      "Redis Pub/Sub pushes book request alerts over Server-Sent Events, which retired the polling loop and the database reads it caused.",
+      "Twenty-five tests across JUnit 5, Mockito, Vitest and React Testing Library, reaching 76% on JWT authentication and access control. The frontend ships to S3 and CloudFront in 27 seconds.",
     ],
   },
   {
-    role: "Front End Developer Intern",
-    place: "World Salon",
-    when: "Jul 2024 to Jan 2025",
-    stack: ["React", "Bootstrap", "JavaScript"],
-    links: [{ label: "See it live", href: "https://world-salon.com" }],
-    notes: [
-      "Built three React pages from Figma specifications, shipping responsive components to production.",
-      "Wired existing REST endpoints into those pages with fetch, handling the response shapes and the conditional rendering across all of them.",
+    title: "Cher Digital Analytics",
+    kind: "Consulting",
+    when: "2025",
+    stack: ["Next.js", "Supabase", "Vercel"],
+    links: [
+      { label: "Live site", href: "https://cher-digi-analytics.vercel.app" },
+      { label: "GitHub", href: "https://github.com/rohinigudimetla/cher-digi-analytics" },
+    ],
+    detail: [
+      "A client booking system. Confirming a slot sends Google Calendar OAuth2 to write the event, and Resend posts the confirmation to both the client and the consultant.",
+      "Four RLS-protected Supabase tables, with every read and write routed through a Next.js server route holding the service-role key, so no credential reaches the browser.",
+      "Three production builds failed on the way out, in OAuth2 initialization, a Resend dynamic import, and Supabase environment fallbacks. All three were traced and fixed.",
+    ],
+  },
+  {
+    title: "World Salon",
+    kind: "Internship",
+    when: "2024",
+    stack: ["React", "Bootstrap"],
+    links: [{ label: "world-salon.com", href: "https://world-salon.com" }],
+    detail: [
+      "Three React pages built from Figma specifications and shipped to production as responsive components.",
+      "Existing REST endpoints wired in with fetch, handling response shapes and conditional rendering throughout.",
     ],
   },
 ];
 
-/* -------------------------------------------------------- Pocket Library */
-
-export const library = {
-  name: "Pocket Library",
-  lead: "Deliberately over-engineered, and the paper trail was the point. Sixteen architectural decision records sit beside the code, one for every trade-off worth arguing about.",
-  links: [
-    { label: "See it live", href: "https://pocklib.site" },
-    {
-      label: "Read the source",
-      href: "https://github.com/rohinigudimetla/Pocket-Library",
-    },
-  ],
-  stack: ["Spring Boot", "PostgreSQL", "Redis", "Kubernetes", "AWS"],
-  entries: [
-    {
-      mark: "Deploying",
-      text: "Spring Boot runs on a minikube cluster on EC2, watched by liveness and readiness probes through Spring Actuator. A manual twelve-step SSH sequence became a four-minute GitHub Actions pipeline that rolls updates out without dropping a request.",
-    },
-    {
-      mark: "Shaping",
-      text: "Fourteen REST endpoints sit on a repository-pattern architecture. Seven Liquibase migrations carry the PostgreSQL schema forward, and every access runs through JPA and Hibernate.",
-    },
-    {
-      mark: "Guarding",
-      text: "An OWASP Top 10 audit guided the security layer: Spring Security role-based access, JWT authentication with Redis-backed token revocation on logout, and Bucket4j rate limiting standing in front of the login route.",
-    },
-    {
-      mark: "Telling",
-      text: "A Redis Pub/Sub system pushes book request alerts to authenticated readers over Server-Sent Events. The polling architecture went away, and the needless database reads went with it.",
-    },
-    {
-      mark: "Proving",
-      text: "Twenty-five tests across JUnit 5, Mockito, Vitest and React Testing Library. Security coverage came first and reached 76% on JWT authentication and access control. The suite runs in GitHub Actions on every push.",
-    },
-    {
-      mark: "Shipping",
-      text: "The React and TypeScript frontend lands on S3 and CloudFront through a path-filtered GitHub Actions pipeline. It wakes only for changes under the client directory and finishes in 27 seconds.",
-    },
-  ],
-};
-
-/* ----------------------------------------------------------- Endpapers */
+export const tools = [
+  "Java",
+  "TypeScript",
+  "Spring Boot",
+  "React",
+  "PostgreSQL",
+  "Redis",
+  "AWS",
+  "Docker",
+  "Kubernetes",
+];
 
 export const schooling = [
-  {
-    school: "Boston University",
-    award: "Master of Science, Software Development",
-    when: "May 2025",
-    where: "Boston, Massachusetts",
-  },
-  {
-    school: "Amrita School of Engineering",
-    award: "Bachelor of Technology, Electronics and Computer Engineering",
-    when: "May 2023",
-    where: "Bangalore, India",
-  },
+  { school: "Boston University", award: "MS, Software Development", when: "2025" },
+  { school: "Amrita School of Engineering", award: "BTech, Electronics and Computer Engineering", when: "2023" },
 ];
-
-export const colophon =
-  "Set in Literata. The lines are drawn by Rough.js, the endpapers by Paper.js, and the paper itself by PixiJS. The grain is computed, and the wobble is deliberate.";

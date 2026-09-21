@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { INK, type Tone } from "@/lib/palette";
-import { onWash, type WashEvent } from "@/lib/wash";
+import { INK } from "@/lib/palette";
 
 /* ------------------------------------------------------------------ *
  * Procedural paper.
@@ -57,9 +56,7 @@ function makeGrainCanvas(size: number, seed: number, coarse: boolean) {
 }
 
 /* ------------------------------------------------------------------ *
- * A single blot of watercolour.
- * Irregular rim, mottled middle, pigment gathering at the edge the way
- * it does when a wash dries. Drawn once, tinted per use.
+ * A soft irregular stain, used for the old foxing marks on the sheet.
  * ------------------------------------------------------------------ */
 function makeWashCanvas(size: number, seed: number) {
   const c = document.createElement("canvas");
@@ -145,15 +142,6 @@ function makeWashCanvas(size: number, seed: number) {
 
 /* ------------------------------------------------------------------ */
 
-type Blot = {
-  damp: import("pixi.js").Sprite;
-  pigment: import("pixi.js").Sprite;
-  age: number;
-  life: number;
-  target: number;
-  spin: number;
-};
-
 export default function WashLayer() {
   const hostRef = useRef<HTMLDivElement | null>(null);
 
@@ -236,76 +224,6 @@ export default function WashLayer() {
       };
       placeFoxing();
 
-      /* ---- live blots ---- */
-      const blotLayer = new PIXI.Container();
-      app.stage.addChild(blotLayer);
-      const blots: Blot[] = [];
-      let pick = 0;
-
-      const bloom = (e: WashEvent) => {
-        if (blots.length > 14) return;
-        const tex = washTextures[pick++ % washTextures.length];
-        const reach = Math.max(e.w, e.h * 2.1, 90);
-
-        // The paper darkens where it is wet, under the colour.
-        const damp = new PIXI.Sprite(tex);
-        damp.anchor.set(0.5);
-        damp.blendMode = "multiply";
-        damp.tint = INK.char;
-        damp.x = e.x;
-        damp.y = e.y;
-        damp.alpha = 0;
-        damp.rotation = Math.random() * Math.PI * 2;
-
-        const pigment = new PIXI.Sprite(tex);
-        pigment.anchor.set(0.5);
-        pigment.tint = INK[e.tone as Tone] ?? INK.terracotta;
-        pigment.x = e.x;
-        pigment.y = e.y;
-        pigment.alpha = 0;
-        pigment.rotation = damp.rotation + 0.4;
-
-        blotLayer.addChild(damp, pigment);
-        blots.push({
-          damp,
-          pigment,
-          age: 0,
-          life: 1500 + Math.random() * 500,
-          target: (reach / 256) * (1.15 + Math.random() * 0.35) * e.strength,
-          spin: (Math.random() - 0.5) * 0.28,
-        });
-      };
-
-      const offWash = onWash(bloom);
-
-      /* ---- the wash spreading, then drying ---- */
-      app.ticker.add((ticker) => {
-        const dt = ticker.deltaMS;
-        for (let i = blots.length - 1; i >= 0; i--) {
-          const b = blots[i];
-          b.age += dt;
-          const t = Math.min(b.age / b.life, 1);
-
-          // Spreads fast while the paper is wet, then barely at all.
-          const spread = 1 - Math.pow(1 - t, 3.1);
-          // Colour arrives quickly and lifts away slowly.
-          const wet = t < 0.13 ? t / 0.13 : Math.pow(1 - (t - 0.13) / 0.87, 1.45);
-
-          const s = 0.44 + spread * b.target;
-          b.pigment.scale.set(s);
-          b.damp.scale.set(s * 1.16);
-          b.pigment.alpha = wet * 0.8;
-          b.damp.alpha = wet * 0.46;
-          b.pigment.rotation += b.spin * (dt / 1000);
-
-          if (t >= 1) {
-            b.pigment.destroy();
-            b.damp.destroy();
-            blots.splice(i, 1);
-          }
-        }
-      });
-
       /* ---- resize ---- */
       const onResize = () => {
         lift.width = app.screen.width;
@@ -317,7 +235,6 @@ export default function WashLayer() {
       window.addEventListener("resize", onResize);
 
       cleanup = () => {
-        offWash();
         window.removeEventListener("resize", onResize);
         app.destroy(true, { children: true, texture: true });
       };
@@ -333,7 +250,7 @@ export default function WashLayer() {
     <div
       ref={hostRef}
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0 z-[2]"
+      className="pointer-events-none fixed inset-0 z-[60]"
     />
   );
 }

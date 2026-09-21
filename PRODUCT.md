@@ -43,7 +43,7 @@ PDF must be reachable without hunting.
 
 ## Capabilities and Constraints
 
-- Single page. No routing, no multi-page book.
+- Single page. No routing. Structured as four leaves that turn on scroll.
 - Static content. No backend, no CMS, no forms.
 - The site is a portfolio surface only. It is not the Pocket Library product.
 - All factual claims come from the supplied resume. Nothing may be invented or inflated.
@@ -58,6 +58,7 @@ PDF must be reachable without hunting.
   approachable, tactile, hand-illustrated. Explicitly not high fashion, not elite, not
   corporate SaaS. Texture is a requirement, not decoration.
 - Minimal layout, compensated by interactive animation rather than by density.
+- A page shows a line or two. Long-form detail stays folded until a reader opens it.
 
 ## Evidence on Hand
 

@@ -3,7 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import { CSS } from "@/lib/palette";
 
-type Variant = "frame" | "underline" | "rule" | "bracket" | "blob" | "tick";
+type Variant =
+  | "frame"
+  | "underline"
+  | "rule"
+  | "bracket"
+  | "blob"
+  | "tick"
+  | "ring";
 
 type InkProps = {
   variant?: Variant;
@@ -184,6 +191,26 @@ export default function Ink({
         corner(w - p, p, -1, 1, 11);
         corner(p, h - p, 1, -1, 22);
         corner(w - p, h - p, -1, -1, 33);
+      }
+
+      if (variant === "ring") {
+        // A circle drawn round something by hand, twice, never quite closing.
+        nodes.push(
+          rc.circle(w / 2, h / 2, Math.min(w, h) - p * 2, {
+            ...base,
+            roughness: wobble,
+            bowing: 1.4,
+          }) as SVGGElement,
+        );
+        nodes.push(
+          rc.circle(w / 2, h / 2, Math.min(w, h) - p * 2 - 3, {
+            ...base,
+            seed: seed + 43,
+            strokeWidth: strokeWidth * 0.6,
+            roughness: wobble * 1.3,
+            bowing: 1.8,
+          }) as SVGGElement,
+        );
       }
 
       if (variant === "blob") {

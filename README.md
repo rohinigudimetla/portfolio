@@ -1,7 +1,11 @@
 # Rohini Gudimetla, portfolio
 
-A single-page portfolio built to feel like the inside of a children's book:
-warm, dark, hand drawn, and textured rather than flat.
+A book you scroll through. Four leaves: a closed cover, a hello, the work,
+and where to find her. Each page hinges at its top edge and swings up as you
+scroll, revealing the one already sitting underneath.
+
+The design is book-like. The content is not: pages carry a line or two, and
+anything long stays folded away until a reader opens it.
 
 ## Running it
 
@@ -12,79 +16,85 @@ npm run build
 npm run start
 ```
 
+## The turn
+
+`src/components/Book.tsx` stacks every leaf in one pinned viewport and gives
+each a slice of the page's scroll progress. Inside its slice a leaf rotates
+on `rotateX` about `50% 0%`, so the bottom edge lifts toward the reader and
+goes over the top. A shadow gradient deepens as it turns and a warm crease
+runs along the lifting edge.
+
+Scroll distance is one viewport per leaf. The last leaf never turns. Under
+`prefers-reduced-motion` the whole thing degrades to ordinary stacked
+sections.
+
 ## What draws what
 
-The three canvas libraries each do one job, and none of them imitates a
-picture. They draw geometry, linework and texture.
+None of these imitates a picture. They draw geometry, linework and texture.
 
 | Library | Job | Lives in |
 |---|---|---|
-| Paper.js | Marbled endpapers that part around the pointer, and the leaf that sweeps over each section as it arrives | `src/components/Endpapers.tsx`, `src/components/PageTurn.tsx` |
-| PixiJS | Procedural paper grain, old foxing stains, and the watercolour blooms that answer a hover | `src/components/WashLayer.tsx` |
-| Rough.js | Every rule, frame, underline and tick mark on the page, re-inked on hover | `src/components/Ink.tsx` |
+| Paper.js | Voronoi cells standing in for paper fibre, drifting, opening around the pointer | `src/components/Voronoi.tsx` |
+| PixiJS | Procedural paper grain and old foxing stains, over the whole book | `src/components/WashLayer.tsx` |
+| Rough.js | Rules, rings, frames and ticks, re-inked on hover | `src/components/Ink.tsx` |
+| 2D canvas | Watercolour blooms that answer a hover | `src/components/Bloom.tsx` |
 
-The grain is computed per pixel rather than filtered, and the wash textures
-are drawn once at load and then tinted per use.
+The Voronoi follows the Paper.js example, with `d3-delaunay` doing the
+geometry and Paper.js the drawing. It is kept at low contrast on purpose.
 
-### How a hover becomes a watercolour
+### Why blooms are not in the Pixi layer
 
-`src/lib/wash.ts` is a small publish/subscribe bus. Anything hoverable calls
-`spillFromElement`, and the Pixi layer blooms a blot at those coordinates.
-The registry hangs off `globalThis` on purpose: the wash layer is code split,
-and a module-local registry ends up duplicated across chunks, leaving the
-buttons publishing into a set that nothing listens to.
+Each leaf transforms, which makes it a stacking context. A single shared
+canvas cannot sit between every page's background and its own text, so a
+bloom either vanished behind a page or stained the reading panel on top of
+it. `Bloom` therefore renders inside each leaf and ignores any spill whose
+coordinates fall outside its own box. `src/lib/wash.ts` is the bus between
+them, and its registry hangs off `globalThis` because the layer is code
+split and a module-local registry ends up duplicated across chunks.
 
-## Layering
-
-Everything decorative sits under the ink.
+## Layering, inside a leaf
 
 ```
-z-40  navigation
-z-10  all readable content
-z-2   the paper: grain, stains, watercolour blooms
-z-1   section backdrops (gradients, warm pools)
-z-0   Paper.js endpapers
+z-30  the opened detail panel
+z-20  the turn's shadow and crease
+z-10  everything readable
+z-1   watercolour blooms
+z-0   Voronoi fibre, page background
 ```
+
+Paper grain is the exception: it is fixed at `z-60`, over the whole book,
+because grain sits on top of everything in a real sheet.
 
 ## Palette
 
-Locked to the three inks the brief fixed, plus warm earths that complete the
-set. All tokens live in `src/app/globals.css` and `src/lib/palette.ts`.
-
 | Token | Value | Use |
 |---|---|---|
-| `forest` | `#334736` | page ground |
+| `forest` | `#334736` | the page |
 | `cream` | `#EEEBD3` | primary ink |
 | `terracotta` | `#E3655B` | accent, the only one |
-| `char` | `#1B211C` | deep charcoal, the dark under the page |
-| `gold` | `#D9A441` | drop caps, dates, margin notes |
-| `clay` | `#7A4E3F` | binding brown |
+| `char` | `#1B211C` | the table the book lies on |
+| `gold` | `#D9A441` | dates, margin notes, the cover rule |
+| `clay` | `#7A4E3F` | the cover boards |
 | `sage` | `#9AA98E` | secondary ink |
 
 ## Content
 
-Every factual claim comes from `src/content/book.ts`, which is transcribed
-from the resume in `public/rohini-gudimetla-resume.pdf`. Editing the copy
-means editing that one file.
+Everything the site says lives in `src/content/book.ts`, transcribed from
+`public/rohini-gudimetla-resume.pdf`. Each work entry has a one-line face and
+a `detail` array that only appears once the entry is opened.
+
+## Slots to fill
+
+- **Portrait.** `Hello` shows initials in a hand-drawn ring. Drop a square
+  image at `/public/rohini.jpg`, about 480px, and swap it in for the initials.
+  Nothing else needs to change.
+- **Painted artwork.** Image generation was unavailable when this was built,
+  so there is none. The cover and the hello page would each take one warm
+  gouache spot illustration on the forest ground.
 
 ## Notes
 
 - Paper.js is aliased to its browser-only core build in `next.config.mjs`,
   since its default entry reaches for `canvas` and `jsdom`.
 - Every canvas is `aria-hidden` and the page reads correctly without them.
-- All motion collapses under `prefers-reduced-motion`.
-- The page is dark only, which is a deliberate single-theme choice.
-
-## Illustration slots
-
-Image generation was unavailable when this was built, so the page carries no
-painted artwork. Three places would take it well, and each is a plain `img`
-drop-in with no layout change needed:
-
-1. Beside the hero type, right third, roughly 3:2. A cosy lamplit desk nook.
-2. The Pocket Library title block, right half, roughly 1:1. A lantern lit
-   shelf with a key and a padlock.
-3. The closing section, right of the contact list, roughly 3:2. A paper boat
-   carrying a lantern.
-
-Painted gouache on the forest ground, warm gold light, soft edges.
+- Dark only, by intent.
