@@ -68,7 +68,7 @@ export default function Work() {
         aria-hidden="true"
         width={310}
         height={310}
-        className="pointer-events-none absolute right-[6vw] bottom-[9vh] w-[clamp(104px,13vw,178px)] select-none"
+        className="pointer-events-none absolute right-[6vw] bottom-[9vh] z-40 w-[clamp(104px,13vw,178px)] select-none"
         style={{ transform: "rotate(3deg)" }}
       />
 

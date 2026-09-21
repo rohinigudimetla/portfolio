@@ -35,6 +35,7 @@ export default function Voronoi({
   accent = "#c94c38",
   className = "",
 }: Props) {
+  const wrapRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const pointer = useRef<{ x: number; y: number; on: boolean }>({
     x: 0,
@@ -44,7 +45,7 @@ export default function Voronoi({
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !wrapRef.current) return;
 
     let disposed = false;
     let cleanup = () => {};
@@ -54,9 +55,10 @@ export default function Voronoi({
         import("paper"),
         import("d3-delaunay"),
       ]);
-      if (disposed || !canvasRef.current) return;
+      if (disposed || !canvasRef.current || !wrapRef.current) return;
 
       const el = canvasRef.current;
+      const box = wrapRef.current;
 
       /**
        * Paper's data-paper-resize never picked up the laid-out size here, so
@@ -214,12 +216,12 @@ export default function Voronoi({
       // Window-level, so nothing painted on top can swallow the hover.
       let pending = 0;
       const onPointer = (e: PointerEvent) => {
-        const r = el.getBoundingClientRect();
-        if (r.width < 2 || el.offsetWidth < 2) return;
+        const r = box.getBoundingClientRect();
+        if (r.width < 2 || box.offsetWidth < 2) return;
         // The rect is in viewport space and may be scaled by an ancestor
         // transform; the diagram is in layout space. Convert between them.
-        const sx = el.offsetWidth / r.width;
-        const sy = el.offsetHeight / r.height;
+        const sx = box.offsetWidth / r.width;
+        const sy = box.offsetHeight / r.height;
         const x = (e.clientX - r.left) * sx;
         const y = (e.clientY - r.top) * sy;
         pointer.current = {
@@ -228,8 +230,8 @@ export default function Voronoi({
           on:
             x > -80 &&
             y > -80 &&
-            x < el.offsetWidth + 80 &&
-            y < el.offsetHeight + 80,
+            x < box.offsetWidth + 80 &&
+            y < box.offsetHeight + 80,
         };
         // pointermove outruns the frame rate; one redraw per frame is plenty.
         if (pending) return;
@@ -241,32 +243,54 @@ export default function Voronoi({
 
       let raf = 0;
       const sync = () => {
-        // offsetWidth/offsetHeight, never getBoundingClientRect. These
-        // canvases sit inside a 3D-transformed stage, and a rect is the
-        // element's *projected* box: any transform on an ancestor, or a
-        // host that scales its frame, shrinks it. offset* reports the
-        // layout size and ignores transforms entirely, which is what the
-        // drawing space has to match.
-        const nw = el.offsetWidth;
-        const nh = el.offsetHeight;
+        // Measure the wrapper, not the canvas. Paper's viewSize setter writes
+        // an inline style.width/height in px onto the canvas element whenever
+        // devicePixelRatio is not 1, and inline styles beat the w-full/h-full
+        // classes. So on a HiDPI screen the canvas froze at whatever width it
+        // first measured, and widening the window never grew it -- the ink
+        // stopped partway across. The wrapper is never written to, so its
+        // layout size stays the truth.
+        //
+        // offsetWidth/offsetHeight, never getBoundingClientRect: these sit
+        // inside a 3D-transformed stage, and a rect is the element's
+        // *projected* box, which any ancestor transform shrinks. offset*
+        // reports layout size and ignores transforms, which is the space the
+        // drawing has to match.
+        const nw = box.offsetWidth;
+        const nh = box.offsetHeight;
         if (nw < 2 || nh < 2) {
           raf = requestAnimationFrame(sync);
           return;
         }
-        if (nw === scope.view.size.width && nh === scope.view.size.height) return;
+        // Clear the inline size unconditionally. scope.setup() writes one of
+        // its own before this ever runs, and an early return below would have
+        // left that first one in place -- which is the frozen canvas.
+        if (el.style.width !== "100%") {
+          el.style.width = "100%";
+          el.style.height = "100%";
+        }
+        if (nw === scope.view.size.width && nh === scope.view.size.height) {
+          return;
+        }
         scope.view.viewSize = new scope.Size(nw, nh);
+        el.style.width = "100%";
+        el.style.height = "100%";
         buildHive();
         render();
       };
 
       const ro = new ResizeObserver(sync);
-      ro.observe(el);
+      ro.observe(box);
+      // A fullscreen toggle can change the viewport without the wrapper's own
+      // box changing in a way the observer reports first, so listen for both.
+      window.addEventListener("resize", sync);
       sync();
 
       window.addEventListener("pointermove", onPointer, { passive: true });
 
       cleanup = () => {
         ro.disconnect();
+        window.removeEventListener("resize", sync);
         cancelAnimationFrame(raf);
         cancelAnimationFrame(pending);
         window.removeEventListener("pointermove", onPointer);
@@ -282,11 +306,13 @@ export default function Voronoi({
   }, [cell, stroke, accent]);
 
   return (
-    <canvas
-      ref={canvasRef}
+    <div
+      ref={wrapRef}
       aria-hidden="true"
-      className={`pointer-events-none absolute inset-0 h-full w-full ${className}`}
+      className={`pointer-events-none absolute inset-0 ${className}`}
       style={{ opacity }}
-    />
+    >
+      <canvas ref={canvasRef} className="block h-full w-full" />
+    </div>
   );
 }

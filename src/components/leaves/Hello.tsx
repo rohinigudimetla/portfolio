@@ -60,6 +60,21 @@ export default function Hello() {
       <Voronoi cell={200} opacity={0.34} className="z-[1]" />
       <NameMark tone="var(--color-moss-lit)" />
 
+      {/* Set in the margin, deliberately small. Lifted out of the content
+          column and above it, so the illustration sits on top of everything
+          on the leaf except the turning shade. */}
+      <img
+        data-spot
+        src="/laptop.webp"
+        alt=""
+        width={360}
+        height={329}
+        aria-hidden="true"
+        className="pointer-events-none absolute right-[7vw] bottom-[22vh] z-40 w-[clamp(130px,17vw,240px)] select-none"
+        style={{ transform: "rotate(-4deg)" }}
+      />
+
+
       <div className="relative z-10 flex h-full flex-col justify-center px-[7vw] py-[12vh] sm:px-[6vw]">
         <div className="max-w-[54rem]">
           <p
@@ -78,18 +93,6 @@ export default function Hello() {
             {note}
           </p>
         </div>
-
-        {/* Set in the margin, deliberately small. */}
-        <img
-          data-spot
-          src="/laptop.webp"
-          alt=""
-          width={360}
-          height={329}
-          aria-hidden="true"
-          className="pointer-events-none absolute right-[7vw] bottom-[22vh] w-[clamp(130px,17vw,240px)] select-none"
-          style={{ transform: "rotate(-4deg)" }}
-        />
 
         <ul
           data-rise
