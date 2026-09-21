@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
+import { useLeafReveal } from "@/lib/useLeafReveal";
 import { ArrowUpRight } from "@phosphor-icons/react";
 import Voronoi from "../Voronoi";
 import NameMark from "../NameMark";
@@ -25,21 +25,30 @@ export default function Work() {
   const root = useRef<HTMLDivElement | null>(null);
   const [open, setOpen] = useState<Entry | null>(null);
 
-  useGSAP(
-    () => {
-      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (reduce) return;
-      gsap.from("[data-row]", {
-        opacity: 0,
-        y: 22,
-        duration: 0.75,
-        stagger: 0.1,
-        ease: "power3.out",
-        scrollTrigger: { trigger: root.current, start: "top 70%" },
-      });
-    },
-    { scope: root },
-  );
+  const reveal = () => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const ctx = gsap.context(() => {
+      // fromTo, never from: a .from() infers its destination from whatever
+      // the live computed style says at creation time, and inside a pinned,
+      // transformed stage that can resolve to 0, leaving the element
+      // invisible for good. Both ends are stated here, and clearProps hands
+      // the element back to the stylesheet when it lands.
+      gsap.fromTo(
+        "[data-row]",
+        { opacity: 0, y: 22 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.75,
+          stagger: 0.1,
+          ease: "power3.out",
+          clearProps: "opacity,transform",
+        },
+      );
+    }, root);
+    return () => ctx.revert();
+  };
+  useLeafReveal(1, reveal);
 
   return (
     <div
@@ -47,17 +56,17 @@ export default function Work() {
       className="relative h-full w-full overflow-hidden"
       style={{ background: "var(--color-butter)" }}
     >
-      <Voronoi cells={26} opacity={0.22} />
+      <Voronoi cell={210} opacity={0.26} />
       <NameMark tone="var(--color-moss)" />
 
       {/* Small, in the margin. Not a hero. */}
       <img
-        src="/laptop.webp"
+        src="/teacup.webp"
         alt=""
         aria-hidden="true"
-        width={360}
-        height={329}
-        className="pointer-events-none absolute right-[6vw] bottom-[9vh] w-[clamp(120px,16vw,230px)] select-none"
+        width={310}
+        height={310}
+        className="pointer-events-none absolute right-[6vw] bottom-[9vh] w-[clamp(104px,13vw,178px)] select-none"
         style={{ transform: "rotate(3deg)" }}
       />
 

@@ -4,6 +4,7 @@ import { useRef, type ReactNode } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { LEAF_ACTIVE } from "@/lib/useLeafReveal";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -32,6 +33,7 @@ export default function Book({ leaves }: { leaves: ReactNode[] }) {
       const shades = gsap.utils.toArray<HTMLElement>("[data-leaf-shade]");
       const turns = sheets.length - 1;
       if (turns < 1) return;
+      let active = 0;
 
       gsap.set(sheets, {
         transformOrigin: "50% 0%",
@@ -44,7 +46,7 @@ export default function Book({ leaves }: { leaves: ReactNode[] }) {
           trigger: wrapRef.current,
           start: "top top",
           end: "bottom bottom",
-          scrub: 0.4,
+          scrub: 0.15,
           pin: stageRef.current,
           // The wrapper already supplies the scroll length, so ScrollTrigger
           // must not add its own spacer on top of it. With the default the
@@ -53,22 +55,31 @@ export default function Book({ leaves }: { leaves: ReactNode[] }) {
           pinSpacing: false,
           anticipatePin: 1,
           invalidateOnRefresh: true,
+          onUpdate: (self) => {
+            const idx = Math.round(self.progress * turns);
+            if (idx !== active) {
+              active = idx;
+              window.dispatchEvent(
+                new CustomEvent<number>(LEAF_ACTIVE, { detail: idx }),
+              );
+            }
+          },
           // One snap point per leaf. Nothing is allowed to rest mid-turn.
           snap: {
             snapTo: 1 / turns,
             // Nearest point, not the next one along. ScrollTrigger's
             // directional default pushes past the leaf you just arrived at.
             directional: false,
-            duration: { min: 0.25, max: 0.6 },
-            delay: 0.05,
-            ease: "power2.inOut",
+            duration: { min: 0.12, max: 0.3 },
+            delay: 0.02,
+            ease: "power2.out",
           },
         },
       });
 
       sheets.forEach((sheet, i) => {
         if (i === turns) return;
-        tl.to(sheet, { rotateX: 94, duration: 1, ease: "power1.in" }, i)
+        tl.to(sheet, { rotateX: 94, duration: 1, ease: "power2.in" }, i)
           .to(sheet, { y: -55, duration: 1 }, i)
           .to(shades[i], { opacity: 1, duration: 1 }, i)
           // Past the halfway point a leaf must stop taking clicks, or it

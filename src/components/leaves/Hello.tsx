@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
+import { useLeafReveal } from "@/lib/useLeafReveal";
 import Voronoi from "../Voronoi";
 import NameMark from "../NameMark";
 import { hello, note, tools, person } from "@/content/book";
@@ -15,16 +15,39 @@ import { hello, note, tools, person } from "@/content/book";
 export default function Hello() {
   const root = useRef<HTMLDivElement | null>(null);
 
-  useGSAP(
-    () => {
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-      gsap
-        .timeline({ defaults: { ease: "power3.out" } })
-        .from("[data-rise]", { opacity: 0, y: 20, duration: 0.85, stagger: 0.09 }, 0.15)
-        .from("[data-cup]", { opacity: 0, y: 26, rotate: -6, duration: 1.1 }, 0.35);
-    },
-    { scope: root },
-  );
+  const reveal = () => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const ctx = gsap.context(() => {
+      // fromTo, never from. See the note in Contact.
+      gsap.fromTo(
+        "[data-rise]",
+        { opacity: 0, y: 20 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.85,
+          stagger: 0.09,
+          delay: 0.15,
+          ease: "power3.out",
+          clearProps: "opacity,transform",
+        },
+      );
+      gsap.fromTo(
+        "[data-spot]",
+        { opacity: 0, y: 26, rotate: -10 },
+        {
+          opacity: 1,
+          y: 0,
+          rotate: -4,
+          duration: 1.1,
+          delay: 0.35,
+          ease: "power3.out",
+        },
+      );
+    }, root);
+    return () => ctx.revert();
+  };
+  useLeafReveal(0, reveal);
 
   return (
     <div
@@ -32,7 +55,7 @@ export default function Hello() {
       className="relative h-full w-full overflow-hidden"
       style={{ background: "var(--color-bark)" }}
     >
-      <Voronoi cells={30} opacity={0.32} />
+      <Voronoi cell={200} opacity={0.34} />
       <NameMark tone="var(--color-moss-lit)" />
 
       <div className="relative z-10 flex h-full flex-col justify-center px-[7vw] py-[12vh] sm:px-[6vw]">
@@ -56,14 +79,14 @@ export default function Hello() {
 
         {/* Set in the margin, deliberately small. */}
         <img
-          data-cup
-          src="/teacup.webp"
+          data-spot
+          src="/laptop.webp"
           alt=""
-          width={310}
-          height={310}
+          width={360}
+          height={329}
           aria-hidden="true"
-          className="pointer-events-none absolute right-[7vw] bottom-[22vh] w-[clamp(96px,13vw,180px)] select-none"
-          style={{ transform: "rotate(-5deg)" }}
+          className="pointer-events-none absolute right-[7vw] bottom-[22vh] w-[clamp(130px,17vw,240px)] select-none"
+          style={{ transform: "rotate(-4deg)" }}
         />
 
         <ul

@@ -3,37 +3,48 @@
 import { useEffect, useRef } from "react";
 
 /**
- * Voronoi cells, after the Paper.js example.
+ * Voronoi, following the Paper.js example's geometry.
  *
- * Here they stand in for the cell structure of handmade paper, so they are
- * drawn at very low contrast and left to drift. The seeds wander on slow
- * independent orbits and the diagram is rebuilt each frame; d3-delaunay
- * handles the geometry and Paper.js does the drawing.
+ * The sites are a bee-hive grid loosened with jitter, one cell roughly every
+ * 200px, so the mesh is an irregular honeycomb rather than random scatter.
+ * Each cell is drawn through the midpoints of its edges with handles set to
+ * half the edge vector, which is what rounds the hard Voronoi polygon into
+ * an organic shape, then scaled to 0.95 so the cells sit apart with a gap
+ * between them.
  *
- * A pointer passing over pushes the nearest seeds aside, which makes the
- * sheet feel like a surface rather than a backdrop.
+ * One extra site tracks the pointer, so a cell forms under the cursor and
+ * the honeycomb opens around it. That listener is on the window, not the
+ * canvas, so it keeps responding no matter which page element is in front.
+ *
+ * d3-delaunay supplies the diagram; the original used rhill's Voronoi.
  */
 
 type Props = {
-  /** Seed count. Fewer, larger cells read better behind text. */
-  cells?: number;
+  /** Target cell size in px. The example uses 200. */
+  cell?: number;
   opacity?: number;
+  stroke?: string;
+  accent?: string;
   className?: string;
 };
 
 export default function Voronoi({
-  cells = 46,
-  opacity = 0.16,
+  cell = 200,
+  opacity = 0.3,
+  stroke = "#6f6f52",
+  accent = "#c94c38",
   className = "",
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const pointer = useRef({ x: -9999, y: -9999 });
+  const pointer = useRef<{ x: number; y: number; on: boolean }>({
+    x: 0,
+    y: 0,
+    on: false,
+  });
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     let disposed = false;
     let cleanup = () => {};
@@ -48,86 +59,126 @@ export default function Voronoi({
       const scope = new paper.PaperScope();
       scope.setup(canvasRef.current);
 
+      const MARGIN = 20;
       let w = scope.view.size.width;
       let h = scope.view.size.height;
+      let hive: [number, number][] = [];
 
-      // Seeds, each with its own drift so the mesh never pulses in step.
-      const seeds = Array.from({ length: cells }, (_, i) => {
-        const r = (n: number) => ((Math.sin(i * 127.1 + n * 311.7) + 1) / 2) % 1;
-        return {
-          hx: r(1),
-          hy: r(2),
-          phase: r(3) * Math.PI * 2,
-          speed: 0.08 + r(4) * 0.16,
-          radius: 0.012 + r(5) * 0.03,
-          ox: 0,
-          oy: 0,
+      /** The example's generateBeeHivePoints, loose. */
+      const buildHive = () => {
+        w = scope.view.size.width;
+        h = scope.view.size.height;
+        const cols = Math.max(2, Math.round(w / cell));
+        const rows = Math.max(2, Math.round(h / cell));
+        const cw = w / cols;
+        const ch = h / rows;
+        const pts: [number, number][] = [];
+        // Deterministic jitter, so the sheet does not reshuffle on resize.
+        let s = 0x2545f2b1;
+        const rnd = () => {
+          s ^= s << 13;
+          s ^= s >>> 17;
+          s ^= s << 5;
+          return ((s >>> 0) % 100000) / 100000;
         };
-      });
-
-      const group = new scope.Group();
-      const stroke = new scope.Color("#6f6f52");
-      const warm = new scope.Color("#c94c38");
-
-      const draw = (time: number) => {
-        const pts: [number, number][] = seeds.map((s) => {
-          const t = time * 0.001 * s.speed + s.phase;
-          let x = (s.hx + Math.cos(t) * s.radius) * w;
-          let y = (s.hy + Math.sin(t * 1.3) * s.radius) * h;
-
-          // Seeds drift away from the pointer, so cells open around it.
-          const dx = x - pointer.current.x;
-          const dy = y - pointer.current.y;
-          const d2 = dx * dx + dy * dy;
-          const reach = 190;
-          if (d2 < reach * reach) {
-            const d = Math.sqrt(d2) || 1;
-            const push = (1 - d / reach) ** 2 * 58;
-            x += (dx / d) * push;
-            y += (dy / d) * push;
+        for (let i = -1; i < cols + 1; i++) {
+          for (let j = -1; j < rows + 1; j++) {
+            let x = i * cw + cw / 2;
+            let y = j * ch + ch / 2;
+            if (j % 2) x += cw / 2;
+            x += (cw / 4) * rnd() - cw / 4;
+            y += (ch / 4) * rnd() - ch / 4;
+            pts.push([x, y]);
           }
-          return [x, y];
-        });
-
-        const delaunay = Delaunay.from(pts);
-        const voronoi = delaunay.voronoi([0, 0, w, h]);
-
-        group.removeChildren();
-        for (let i = 0; i < pts.length; i++) {
-          const poly = voronoi.cellPolygon(i);
-          if (!poly) continue;
-          const path = new scope.Path({ closed: true });
-          for (const [px, py] of poly) path.add(new scope.Point(px, py));
-          // Cell walls, not a wireframe: thin, soft, mostly sage with the
-          // occasional warm one so the mesh is not one flat tone.
-          path.strokeColor = i % 7 === 0 ? warm : stroke;
-          path.strokeWidth = i % 5 === 0 ? 1.6 : 1;
-          path.opacity = i % 7 === 0 ? 0.62 : 1;
-          group.addChild(path);
         }
+        hive = pts;
       };
 
-      if (reduce) {
-        draw(0);
-      } else {
-        let t = 0;
-        scope.view.onFrame = (event: { delta: number }) => {
-          t += event.delta * 1000;
-          draw(t);
-        };
-      }
+      /**
+       * The example's createPath: ride the edge midpoints with handles of
+       * half the edge vector. That is what makes a hard cell read as a soft
+       * one.
+       */
+      const cellPath = (poly: [number, number][], i: number) => {
+        const path = new scope.Path({ closed: true });
+        for (let k = 0; k < poly.length; k++) {
+          const p = new scope.Point(poly[k][0], poly[k][1]);
+          const n = new scope.Point(
+            poly[(k + 1) % poly.length][0],
+            poly[(k + 1) % poly.length][1],
+          );
+          const v = n.subtract(p).divide(2);
+          path.add(
+            new scope.Segment(p.add(v), v.multiply(-1), v),
+          );
+        }
 
+        // removeSmallBits: drop segments that barely travel.
+        const min = path.length / 50;
+        for (let k = path.segments.length - 1; k >= 0; k--) {
+          const seg = path.segments[k];
+          const next = seg.next;
+          if (!next) continue;
+          if (seg.point.getDistance(next.point.add(next.handleIn)) < min) {
+            seg.remove();
+          }
+        }
+        if (path.segments.length < 3) {
+          path.remove();
+          return null;
+        }
+
+        path.scale(0.95);
+        path.strokeColor = new scope.Color(i % 7 === 0 ? accent : stroke);
+        path.strokeWidth = i % 5 === 0 ? 1.5 : 1;
+        path.strokeJoin = "round";
+        path.opacity = i % 7 === 0 ? 0.65 : 1;
+        return path;
+      };
+
+      const group = new scope.Group();
+
+      const render = () => {
+        const sites = hive.slice();
+        if (pointer.current.on) sites.push([pointer.current.x, pointer.current.y]);
+
+        const voronoi = Delaunay.from(sites).voronoi([
+          MARGIN,
+          MARGIN,
+          Math.max(MARGIN + 1, w - MARGIN),
+          Math.max(MARGIN + 1, h - MARGIN),
+        ]);
+
+        group.removeChildren();
+        for (let i = 0; i < sites.length; i++) {
+          const poly = voronoi.cellPolygon(i) as [number, number][] | null;
+          if (!poly || poly.length < 3) continue;
+          const p = cellPath(poly, i);
+          if (p) group.addChild(p);
+        }
+        scope.view.update();
+      };
+
+      buildHive();
+      render();
+
+      // Window-level, so nothing painted on top can swallow the hover.
       const onPointer = (e: PointerEvent) => {
-        const rect = canvasRef.current?.getBoundingClientRect();
-        if (!rect) return;
-        pointer.current.x = e.clientX - rect.left;
-        pointer.current.y = e.clientY - rect.top;
+        const r = canvasRef.current?.getBoundingClientRect();
+        if (!r || r.width < 2) return;
+        const x = e.clientX - r.left;
+        const y = e.clientY - r.top;
+        pointer.current = {
+          x,
+          y,
+          on: x > -80 && y > -80 && x < r.width + 80 && y < r.height + 80,
+        };
+        render();
       };
 
       const onResize = () => {
-        w = scope.view.size.width;
-        h = scope.view.size.height;
-        draw(0);
+        buildHive();
+        render();
       };
 
       window.addEventListener("pointermove", onPointer, { passive: true });
@@ -145,7 +196,7 @@ export default function Voronoi({
       disposed = true;
       cleanup();
     };
-  }, [cells]);
+  }, [cell, stroke, accent]);
 
   return (
     <canvas

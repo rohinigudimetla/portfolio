@@ -73,7 +73,7 @@ export default function Grain() {
         backgroundRepeat: "repeat",
         backgroundSize: "220px 220px",
         mixBlendMode: "overlay",
-        opacity: 0.4,
+        opacity: 0.3,
       }}
     />
   );
