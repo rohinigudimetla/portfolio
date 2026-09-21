@@ -5,15 +5,14 @@ import gsap from "gsap";
 import { useLeafReveal } from "@/lib/useLeafReveal";
 import { ArrowUpRight, DownloadSimple } from "@phosphor-icons/react";
 import NameMark from "../NameMark";
-import { person, schooling } from "@/content/book";
+import { person } from "@/content/book";
 
 /**
  * Last leaf. Cream on the ember field, no plate.
  *
  * Cream on ember is 3.7:1, which clears WCAG's large-text rule but not the
  * body-text one, so everything set on the colour is large and bold enough
- * to qualify. The small colophon line cannot be, so it sits on a bark band
- * at the foot where it reads at 11:1 instead.
+ * to qualify. Nothing small sits on the colour.
  */
 export default function Contact() {
   const root = useRef<HTMLDivElement | null>(null);
@@ -48,7 +47,7 @@ export default function Contact() {
     }, root);
     return () => ctx.revert();
   };
-  useLeafReveal(2, reveal);
+  useLeafReveal(3, reveal);
 
   return (
     <div
@@ -103,17 +102,6 @@ export default function Contact() {
         </a>
       </div>
 
-      {/* The colophon is too small to sit on the colour, so it gets a band. */}
-      <div
-        className="flex flex-wrap gap-x-10 gap-y-2 px-[7vw] py-6 sm:px-[6vw]"
-        style={{ background: "var(--color-bark)", color: "var(--color-butter)" }}
-      >
-        {schooling.map((s) => (
-          <p key={s.school} className="t-meta">
-            {s.when} / {s.school} / {s.award}
-          </p>
-        ))}
-      </div>
     </div>
   );
 }

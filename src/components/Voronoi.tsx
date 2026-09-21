@@ -99,7 +99,19 @@ export default function Voronoi({
        * half the edge vector. That is what makes a hard cell read as a soft
        * one.
        */
-      const cellPath = (poly: [number, number][], i: number) => {
+      const cellPath = (ring: [number, number][], i: number) => {
+        // d3 returns a closed ring: the last point repeats the first. Feeding
+        // that duplicate into the smoothing gives a zero-length edge, whose
+        // handles collapse and leave a cusp, which is what turned these
+        // cells into tall bulbs.
+        const poly =
+          ring.length > 1 &&
+          ring[0][0] === ring[ring.length - 1][0] &&
+          ring[0][1] === ring[ring.length - 1][1]
+            ? ring.slice(0, -1)
+            : ring;
+        if (poly.length < 3) return null;
+
         const path = new scope.Path({ closed: true });
         for (let k = 0; k < poly.length; k++) {
           const p = new scope.Point(poly[k][0], poly[k][1]);
@@ -114,7 +126,7 @@ export default function Voronoi({
         }
 
         // removeSmallBits: drop segments that barely travel.
-        const min = path.length / 50;
+        const min = path.length / 90;
         for (let k = path.segments.length - 1; k >= 0; k--) {
           const seg = path.segments[k];
           const next = seg.next;
@@ -139,8 +151,23 @@ export default function Voronoi({
       const group = new scope.Group();
 
       const render = () => {
-        const sites = hive.slice();
-        if (pointer.current.on) sites.push([pointer.current.x, pointer.current.y]);
+        const px = pointer.current.x;
+        const py = pointer.current.y;
+        const live = pointer.current.on;
+
+        // Sites near the cursor are pushed aside, so the honeycomb opens
+        // around it rather than merely gaining one more cell.
+        const REACH = 260;
+        const sites: [number, number][] = hive.map(([x, y]) => {
+          if (!live) return [x, y];
+          const dx = x - px;
+          const dy = y - py;
+          const d = Math.hypot(dx, dy) || 1;
+          if (d > REACH) return [x, y];
+          const push = (1 - d / REACH) ** 2 * 96;
+          return [x + (dx / d) * push, y + (dy / d) * push];
+        });
+        const cursorIndex = live ? sites.push([px, py]) - 1 : -1;
 
         const voronoi = Delaunay.from(sites).voronoi([
           MARGIN,
@@ -154,7 +181,14 @@ export default function Voronoi({
           const poly = voronoi.cellPolygon(i) as [number, number][] | null;
           if (!poly || poly.length < 3) continue;
           const p = cellPath(poly, i);
-          if (p) group.addChild(p);
+          if (!p) continue;
+          if (i === cursorIndex) {
+            // The cell under the cursor is inked, so the response is legible.
+            p.strokeColor = new scope.Color(accent);
+            p.strokeWidth = 2;
+            p.opacity = 1;
+          }
+          group.addChild(p);
         }
         scope.view.update();
       };

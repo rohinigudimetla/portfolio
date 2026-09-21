@@ -38,7 +38,7 @@ export const entries: Entry[] = [
   {
     title: "Pocket Library",
     kind: "Personal project",
-    when: "2025",
+    when: "2026",
     stack: ["Spring Boot", "PostgreSQL", "Redis", "Kubernetes", "AWS"],
     links: [
       { label: "pocklib.site", href: "https://pocklib.site" },
@@ -94,6 +94,16 @@ export const tools = [
 ];
 
 export const schooling = [
-  { school: "Boston University", award: "MS, Software Development", when: "2025" },
-  { school: "Amrita School of Engineering", award: "BTech, Electronics and Computer Engineering", when: "2023" },
+  {
+    school: "Boston University",
+    award: "Master of Science, Software Development",
+    when: "2025",
+    where: "Boston, Massachusetts",
+  },
+  {
+    school: "Amrita School of Engineering",
+    award: "Bachelor of Technology, Electronics and Computer Engineering",
+    when: "2023",
+    where: "Bangalore, India",
+  },
 ];
