@@ -38,13 +38,13 @@ export default function Education() {
     <div
       ref={root}
       className="relative h-full w-full overflow-hidden"
-      style={{ background: "var(--color-bark)" }}
+      style={{ background: "var(--color-moss)" }}
     >
-      <Voronoi cell={205} opacity={0.3} />
-      <NameMark tone="var(--color-moss-lit)" />
+      <Voronoi cell={190} opacity={0.26} stroke="#2a2d1d" accent="#fce7bc" />
+      <NameMark tone="var(--color-bark)" />
 
       <div className="relative z-10 flex h-full flex-col justify-center px-[7vw] sm:px-[6vw]">
-        <p data-rise className="t-meta mb-12" style={{ color: "var(--color-ember)" }}>
+        <p data-rise className="t-meta mb-12" style={{ color: "var(--color-butter)", opacity: 0.85 }}>
           Education
         </p>
 
@@ -55,15 +55,15 @@ export default function Education() {
               data-rise
               className="flex flex-wrap items-baseline gap-x-8 gap-y-2 py-8"
               style={{
-                borderTop: "1px solid var(--color-moss)",
+                borderTop: "1px solid color-mix(in srgb, #2a2d1d 45%, transparent)",
                 ...(i === schooling.length - 1
-                  ? { borderBottom: "1px solid var(--color-moss)" }
+                  ? { borderBottom: "1px solid color-mix(in srgb, #2a2d1d 45%, transparent)" }
                   : {}),
               }}
             >
               <span
                 className="t-meta w-16 shrink-0"
-                style={{ color: "var(--color-ember)" }}
+                style={{ color: "var(--color-butter)" }}
               >
                 {s.when}
               </span>
@@ -75,15 +75,15 @@ export default function Education() {
                   {s.school}
                 </span>
                 <span
-                  className="mt-2 block text-[0.98rem]"
-                  style={{ color: "var(--color-moss-lit)" }}
+                  className="mt-2 block text-[1.08rem]"
+                  style={{ color: "var(--color-butter)", opacity: 0.86 }}
                 >
                   {s.award}
                 </span>
               </span>
               <span
                 className="t-meta shrink-0"
-                style={{ color: "var(--color-moss-lit)" }}
+                style={{ color: "var(--color-butter)", opacity: 0.8 }}
               >
                 {s.where}
               </span>

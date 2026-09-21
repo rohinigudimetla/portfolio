@@ -56,8 +56,28 @@ export default function Voronoi({
       ]);
       if (disposed || !canvasRef.current) return;
 
+      const el = canvasRef.current;
+
+      /**
+       * Paper's own data-paper-resize never picked up the laid-out size
+       * here, so the view stayed at the canvas default of 300x150 while CSS
+       * stretched it across the whole leaf. Everything was drawn a fifth of
+       * scale and blown up: huge cells, thick blurry strokes, and a pointer
+       * whose coordinates were in CSS pixels while the diagram lived in a
+       * different space, so the hover pushed cells nowhere near the cursor.
+       * The view is sized from the element here and kept in step below.
+       */
+      const fit = () => {
+        const r = el.getBoundingClientRect();
+        return { w: Math.max(2, Math.round(r.width)), h: Math.max(2, Math.round(r.height)) };
+      };
+      const first = fit();
+      el.width = first.w;
+      el.height = first.h;
+
       const scope = new paper.PaperScope();
-      scope.setup(canvasRef.current);
+      scope.setup(el);
+      scope.view.viewSize = new scope.Size(first.w, first.h);
 
       const MARGIN = 20;
       let w = scope.view.size.width;
@@ -210,17 +230,20 @@ export default function Voronoi({
         render();
       };
 
-      const onResize = () => {
+      const ro = new ResizeObserver(() => {
+        const { w: nw, h: nh } = fit();
+        if (nw === scope.view.size.width && nh === scope.view.size.height) return;
+        scope.view.viewSize = new scope.Size(nw, nh);
         buildHive();
         render();
-      };
+      });
+      ro.observe(el);
 
       window.addEventListener("pointermove", onPointer, { passive: true });
-      window.addEventListener("resize", onResize);
 
       cleanup = () => {
+        ro.disconnect();
         window.removeEventListener("pointermove", onPointer);
-        window.removeEventListener("resize", onResize);
         scope.view?.remove();
         scope.project?.remove();
       };
@@ -236,7 +259,6 @@ export default function Voronoi({
     <canvas
       ref={canvasRef}
       aria-hidden="true"
-      data-paper-resize="true"
       className={`pointer-events-none absolute inset-0 h-full w-full ${className}`}
       style={{ opacity }}
     />
