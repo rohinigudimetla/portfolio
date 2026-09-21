@@ -18,9 +18,17 @@ const nodeOnly = [
   path.resolve("./node_modules/paper/dist/node/extend.js"),
 ];
 
+/**
+ * `STATIC_EXPORT=1 npm run build` emits a self-contained ./out that can be
+ * opened from a file path or hosted anywhere flat. Paths are made relative
+ * so the export does not assume it is served from a domain root.
+ */
+const isExport = process.env.STATIC_EXPORT === "1";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  ...(isExport ? { output: "export", images: { unoptimized: true } } : {}),
 
   turbopack: {
     resolveAlias: {
