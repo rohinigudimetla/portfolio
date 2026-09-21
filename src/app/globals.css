@@ -1,42 +1,37 @@
 @import "tailwindcss";
 
 /* ============================================================
-   INKS
-   The three the brief locks, plus the warm earths that finish
-   the set. Nothing outside this list appears on the page.
+   THREE INKS
+
+   This page is printed, not painted. Three spot inks on
+   uncoated stock, the way a mid-century picture book was
+   actually made. Every colour below is one of those three or a
+   true overprint of two of them, which is the only way a fourth
+   tone exists on a three-colour press.
+
+   No gradients. No shadows. No blur. Flat fields only.
    ============================================================ */
 @theme {
-  /* locked by the brief */
+  /* the three inks, as specified */
   --color-forest: #334736;
-  --color-cream: #eeebd3;
-  --color-terracotta: #e3655b;
+  --color-paper: #eeebd3;
+  --color-flame: #e3655b;
 
-  /* the dark the book rests in */
-  --color-char: #1b211c;
-  --color-char-soft: #232b24;
+  /* overprints: what happens where two inks land on each other */
+  --color-forest-flame: #2c2a24; /* forest over flame */
+  --color-flame-paper: #e9a08f; /* flame at half coverage on paper */
+  --color-forest-paper: #7e8a70; /* forest at half coverage on paper */
 
-  /* forest, lit and shadowed */
-  --color-forest-lit: #3e543f;
-  --color-forest-deep: #283829;
-  --color-forest-mist: #4a5f4c;
+  /* the press's own black, for type that has to hold on flame */
+  --color-ink: #16190f;
 
-  /* warm supplements */
-  --color-gold: #d9a441;
-  --color-gold-pale: #e8c988;
-  --color-sage: #9aa98e;
-  --color-clay: #7a4e3f;
-  --color-rose-dust: #c98b7e;
-  --color-cream-dim: #b9b6a2;
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
-  --font-book: var(--font-literata), Georgia, serif;
-  --font-hand: var(--font-caveat), cursive;
-
-  --ease-settle: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Sharp. A cut-paper shape has no corner radius. */
+  --radius-plate: 0px;
 }
 
-/* ============================================================
-   BASE
-   ============================================================ */
 *,
 *::before,
 *::after {
@@ -44,138 +39,92 @@
 }
 
 html {
-  background-color: var(--color-char);
+  background-color: var(--color-forest);
+  -webkit-font-smoothing: antialiased;
 }
 
 body {
   margin: 0;
-  min-height: 100dvh;
-  background-color: var(--color-char);
-  color: var(--color-cream);
-  font-family: var(--font-book);
-  font-optical-sizing: auto;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+  background-color: var(--color-forest);
+  color: var(--color-paper);
+  font-family: var(--font-sans);
+  font-synthesis-weight: none;
 }
 
 /* ------------------------------------------------------------
-   Browser surfaces. The parts nobody draws still carry the book.
+   Browser surfaces, inked rather than left to the browser.
    ------------------------------------------------------------ */
 ::selection {
-  background: color-mix(in oklab, var(--color-terracotta) 40%, transparent);
-  color: var(--color-cream);
+  background: var(--color-flame);
+  color: var(--color-ink);
 }
 
 :root {
-  accent-color: var(--color-terracotta);
-  caret-color: var(--color-terracotta);
-  scrollbar-color: color-mix(in oklab, var(--color-sage) 38%, transparent)
-    var(--color-forest-deep);
-  scrollbar-width: thin;
+  accent-color: var(--color-flame);
+  caret-color: var(--color-flame);
+  scrollbar-width: none;
 }
 
 ::-webkit-scrollbar {
-  width: 11px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--color-forest-deep);
-}
-
-::-webkit-scrollbar-thumb {
-  background: color-mix(in oklab, var(--color-sage) 36%, transparent);
-  border: 3px solid var(--color-forest-deep);
-  border-radius: 99px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in oklab, var(--color-gold) 52%, transparent);
+  width: 0;
+  height: 0;
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-gold);
-  outline-offset: 3px;
-  border-radius: 2px;
+  outline: 3px solid var(--color-flame);
+  outline-offset: 2px;
 }
 
 a {
   color: inherit;
-  text-decoration-color: color-mix(in oklab, var(--color-terracotta) 62%, transparent);
-  text-underline-offset: 0.22em;
-  text-decoration-thickness: from-font;
+  text-decoration: none;
 }
 
 /* ============================================================
    TYPE
-   One family, Literata, worked through optical size and weight.
-   Caveat appears only as a margin annotation, never as emphasis
-   inside a sentence.
+   One family. Weight and size carry the whole hierarchy.
    ============================================================ */
-.t-display {
-  font-family: var(--font-book);
-  font-weight: 600;
-  font-variation-settings: "opsz" 72;
-  line-height: 0.98;
-  letter-spacing: -0.03em;
+.t-poster {
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 0.92;
+  text-wrap: balance;
 }
 
-.t-heading {
-  font-family: var(--font-book);
+.t-lead {
   font-weight: 600;
-  font-variation-settings: "opsz" 40;
-  line-height: 1.08;
-  letter-spacing: -0.022em;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+  text-wrap: balance;
+}
+
+.t-meta {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
 .t-body {
-  font-variation-settings: "opsz" 12;
-  line-height: 1.75;
-  letter-spacing: 0.004em;
-}
-
-.t-hand {
-  font-family: var(--font-hand);
-  font-weight: 500;
-  letter-spacing: 0.012em;
-}
-
-/* Storybook opening. One per page, on the first paragraph only. */
-.dropcap::first-letter {
-  float: left;
-  font-weight: 600;
-  font-variation-settings: "opsz" 72;
-  font-size: 3.1em;
-  line-height: 0.82;
-  padding: 0.06em 0.1em 0 0;
-  color: var(--color-gold);
+  font-weight: 400;
+  line-height: 1.62;
+  letter-spacing: -0.003em;
 }
 
 /* ============================================================
-   MOTION
-   One authored moment: paper settling onto the page.
+   PRESS
+   Misregistration: the second ink lands a hair off the first.
+   One device, used on the cover and nowhere else.
    ============================================================ */
-@keyframes sheet-settle {
-  from {
-    opacity: 0;
-    transform: translateY(14px) rotate(-0.4deg);
-    filter: blur(3px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) rotate(0deg);
-    filter: blur(0);
-  }
-}
-
-.sheet-settle {
-  animation: sheet-settle 0.8s var(--ease-settle) both;
+.plate-shift {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  user-select: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-
   *,
   *::before,
   *::after {

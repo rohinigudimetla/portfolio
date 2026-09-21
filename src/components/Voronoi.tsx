@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { CSS } from "@/lib/palette";
 
 /**
  * Voronoi cells, after the Paper.js example.
@@ -67,8 +66,8 @@ export default function Voronoi({
       });
 
       const group = new scope.Group();
-      const stroke = new scope.Color(CSS.sage);
-      const warm = new scope.Color(CSS.gold);
+      const stroke = new scope.Color("#7e8a70");
+      const warm = new scope.Color("#e3655b");
 
       const draw = (time: number) => {
         const pts: [number, number][] = seeds.map((s) => {

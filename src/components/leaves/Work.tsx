@@ -1,235 +1,161 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { ArrowUpRight, X } from "@phosphor-icons/react";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
+import { ArrowUpRight } from "@phosphor-icons/react";
 import Voronoi from "../Voronoi";
-import Bloom from "../Bloom";
-import Ink from "../Ink";
-import { CSS } from "@/lib/palette";
-import { entries } from "@/content/book";
-import { spillFromElement } from "@/lib/wash";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "../ui/dialog";
+import { entries, type Entry } from "@/content/book";
 
 /**
- * Work, folded.
+ * Work. Three lines on the page; everything else is behind a Radix dialog,
+ * which brings its own focus trap, escape handling and scroll lock.
  *
- * The page carries three lines. Everything anyone actually wants to read is
- * behind them, and arrives only when an entry is opened. That keeps the page
- * quiet without throwing away the detail that makes the work worth reading.
+ * The Voronoi plate lives here and only here, at low coverage, standing in
+ * for the fibre of the stock. One page, one plate.
  */
-/** A torn note pinned to the page. Tilted, soft edged, hand lettered. */
-function Scrap({
-  text,
-  className = "",
-  tilt = 0,
-  seed = 1,
-}: {
-  text: string;
-  className?: string;
-  tilt?: number;
-  seed?: number;
-}) {
+export default function Work() {
+  const root = useRef<HTMLDivElement | null>(null);
+  const [open, setOpen] = useState<Entry | null>(null);
+
+  useGSAP(
+    () => {
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (reduce) return;
+      gsap.from("[data-row]", {
+        opacity: 0,
+        y: 22,
+        duration: 0.75,
+        stagger: 0.1,
+        ease: "power3.out",
+        scrollTrigger: { trigger: root.current, start: "top 70%" },
+      });
+    },
+    { scope: root },
+  );
+
   return (
     <div
-      aria-hidden="true"
-      className={`pointer-events-none absolute z-10 px-5 py-3 ${className}`}
-      style={{
-        transform: `rotate(${tilt}deg)`,
-        background:
-          "linear-gradient(150deg, rgba(238,235,211,0.07) 0%, rgba(238,235,211,0.035) 100%)",
-        boxShadow: "0 8px 22px -10px rgba(0,0,0,0.55)",
-      }}
+      ref={root}
+      className="relative h-full w-full overflow-hidden"
+      style={{ background: "var(--color-forest)" }}
     >
-      <Ink variant="frame" color={CSS.sage} seed={seed} strokeWidth={0.9} wobble={3} opacity={0.4} pad={2} />
-      <span className="t-hand relative z-10 text-[1.1rem]" style={{ color: CSS.creamDim }}>
-        {text}
-      </span>
-    </div>
-  );
-}
+      <Voronoi cells={34} opacity={0.08} />
 
-export default function Work() {
-  const reduce = useReducedMotion();
-  const [open, setOpen] = useState<number | null>(null);
-  const entry = open === null ? null : entries[open];
+      <div className="relative z-10 flex h-full flex-col justify-center px-[7vw] pb-[6vh] sm:px-[6vw]">
+        <p className="t-meta mb-12" style={{ color: "var(--color-flame)" }}>
+          Selected work
+        </p>
 
-  return (
-    <div className="relative h-full w-full">
-      <Voronoi cells={52} opacity={0.11} />
-      <Bloom />
-
-      <div className="relative z-10 flex h-full w-full items-center px-7 sm:px-14">
-        <div className="w-full max-w-[46rem] lg:ml-[6%]">
-          <motion.h2
-            initial={reduce ? false : { opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="t-hand text-[1.4rem]"
-            style={{ color: CSS.gold }}
-          >
-            things I have built
-          </motion.h2>
-
-          <div className="mt-10 flex flex-col">
-            {entries.map((e, i) => (
-              <motion.button
-                key={e.title}
+        <ul className="w-full">
+          {entries.map((e) => (
+            <li key={e.title} data-row>
+              <button
                 type="button"
-                onClick={() => setOpen(i)}
-                onPointerEnter={(ev) =>
-                  spillFromElement(ev.currentTarget as HTMLElement, "terracotta", 0.5)
-                }
-                initial={reduce ? false : { opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{
-                  duration: 0.75,
-                  delay: 0.08 + i * 0.09,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
-                className="group relative cursor-pointer border-0 bg-transparent px-0 py-6 text-left"
+                onClick={() => setOpen(e)}
+                className="group flex w-full cursor-pointer items-baseline justify-between gap-6
+                           border-0 border-t bg-transparent py-7 text-left
+                           transition-colors duration-200
+                           hover:bg-[var(--color-flame)]/10
+                           focus-visible:outline-3 focus-visible:outline-[var(--color-flame)]"
+                style={{ borderTopColor: "var(--color-forest-paper)", borderTopWidth: 1 }}
               >
-                <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
+                <span className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
                   <span
-                    className="t-display text-[clamp(1.5rem,3.6vw,2.2rem)] transition-colors duration-300 group-hover:text-[var(--color-gold-pale)]"
-                    style={{ color: CSS.cream }}
+                    className="t-lead text-[clamp(1.6rem,4.4vw,3rem)] transition-colors duration-200 group-hover:text-[var(--color-flame)]"
+                    style={{ color: "var(--color-paper)" }}
                   >
                     {e.title}
                   </span>
-                  <span
-                    className="text-[0.82rem] tracking-[0.13em] uppercase"
-                    style={{ color: CSS.sage }}
-                  >
+                  <span className="t-meta" style={{ color: "var(--color-forest-paper)" }}>
                     {e.kind}
                   </span>
-                  <span className="t-hand text-[1.15rem]" style={{ color: CSS.terracotta }}>
-                    {e.when}
-                  </span>
-                  <span
-                    className="t-hand ml-auto text-[1.1rem] opacity-40 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100"
-                    style={{ color: CSS.goldPale }}
-                  >
-                    read it
-                  </span>
-                </div>
-
-                {/* The rule inks itself in as the row is approached. */}
-                <div className="relative mt-3 h-3 w-full opacity-45 transition-opacity duration-400 group-hover:opacity-100">
-                  <Ink
-                    variant="underline"
-                    color={CSS.sage}
-                    seed={140 + i * 61}
-                    strokeWidth={1}
-                    pad={0}
-                  />
-                </div>
-              </motion.button>
-            ))}
-          </div>
-        </div>
+                </span>
+                <span
+                  className="t-meta shrink-0"
+                  style={{ color: "var(--color-flame)" }}
+                >
+                  {e.when}
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
+        <div
+          aria-hidden="true"
+          style={{ borderTop: "1px solid var(--color-forest-paper)" }}
+        />
       </div>
 
-      {/* Notes pinned in the margin. Both are facts, not decoration. */}
-      <Scrap
-        text="16 decision records"
-        className="right-[7%] bottom-[24%] hidden lg:block"
-        tilt={-4.5}
-        seed={301}
-      />
-      <Scrap
-        text="76% coverage on auth"
-        className="right-[15%] top-[21%] hidden lg:block"
-        tilt={3.2}
-        seed={457}
-      />
+      <Dialog open={open !== null} onOpenChange={(v) => !v && setOpen(null)}>
+        <DialogContent>
+          {open && (
+            <div className="mx-auto w-full max-w-[46rem] px-[7vw] py-[12vh] sm:px-8">
+              <DialogTitle
+                className="t-poster text-[clamp(2.2rem,6vw,4rem)]"
+                style={{ color: "var(--color-forest)" }}
+              >
+                {open.title}
+              </DialogTitle>
+              <DialogDescription
+                className="t-meta mt-4"
+                style={{ color: "var(--color-flame)" }}
+              >
+                {open.kind} / {open.when}
+              </DialogDescription>
 
-      {/* The detail, which exists only once somebody asks for it. */}
-      <AnimatePresence>
-        {entry && (
-          <motion.div
-            key="detail"
-            initial={reduce ? { opacity: 0 } : { y: "100%" }}
-            animate={reduce ? { opacity: 1 } : { y: 0 }}
-            exit={reduce ? { opacity: 0 } : { y: "100%" }}
-            transition={{ duration: 0.62, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute inset-0 z-30 overflow-y-auto"
-            style={{
-              background:
-                "linear-gradient(to bottom, #2B3C2D 0%, #283829 60%, #232B24 100%)",
-            }}
-          >
-            <div className="mx-auto w-full max-w-[44rem] px-7 py-16 sm:px-14 sm:py-20">
-              <div className="flex items-start justify-between gap-8">
-                <div>
-                  <h3
-                    className="t-display text-[clamp(1.7rem,4vw,2.4rem)]"
-                    style={{ color: CSS.cream }}
-                  >
-                    {entry.title}
-                  </h3>
+              <div className="mt-12 flex flex-col gap-6">
+                {open.detail.map((d, i) => (
                   <p
-                    className="mt-2 text-[0.82rem] tracking-[0.13em] uppercase"
-                    style={{ color: CSS.sage }}
-                  >
-                    {entry.kind}, {entry.when}
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setOpen(null)}
-                  aria-label="Close"
-                  className="shrink-0 cursor-pointer border-0 bg-transparent p-2 transition-transform duration-200 hover:rotate-90"
-                  style={{ color: CSS.terracotta }}
-                >
-                  <X size={22} weight="regular" />
-                </button>
-              </div>
-
-              <div className="relative mt-6 mb-10 h-4 w-32">
-                <Ink variant="underline" color={CSS.gold} seed={509} strokeWidth={1.3} pad={0} />
-              </div>
-
-              <div className="flex flex-col gap-5">
-                {entry.detail.map((d, di) => (
-                  <p
-                    key={di}
-                    className="t-body text-[1rem]"
-                    style={{ color: CSS.creamDim }}
+                    key={i}
+                    className="t-body text-[1.02rem]"
+                    style={{ color: "var(--color-forest)" }}
                   >
                     {d}
                   </p>
                 ))}
               </div>
 
-              <div className="mt-10 flex flex-wrap items-center gap-x-5 gap-y-2">
-                {entry.stack.map((s) => (
-                  <span key={s} className="text-[0.84rem]" style={{ color: CSS.sage }}>
+              <ul className="mt-12 flex flex-wrap gap-x-6 gap-y-2">
+                {open.stack.map((s) => (
+                  <li
+                    key={s}
+                    className="t-meta"
+                    style={{ color: "var(--color-forest-paper)" }}
+                  >
                     {s}
-                  </span>
+                  </li>
                 ))}
-              </div>
+              </ul>
 
-              <div className="mt-8 flex flex-wrap items-center gap-7">
-                {entry.links.map((l) => (
+              <div className="mt-10 flex flex-wrap gap-4">
+                {open.links.map((l) => (
                   <a
                     key={l.href}
                     href={l.href}
                     target="_blank"
                     rel="noreferrer noopener"
-                    className="inline-flex items-center gap-1.5 text-[0.95rem] no-underline transition-colors duration-200 hover:text-[var(--color-gold-pale)]"
-                    style={{ color: CSS.terracotta }}
+                    className="t-meta inline-flex items-center gap-2 px-5 py-3 transition-colors duration-150"
+                    style={{
+                      background: "var(--color-forest)",
+                      color: "var(--color-paper)",
+                    }}
                   >
                     {l.label}
-                    <ArrowUpRight size={15} weight="regular" aria-hidden="true" />
+                    <ArrowUpRight size={14} weight="bold" aria-hidden="true" />
                   </a>
                 ))}
               </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

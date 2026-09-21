@@ -30,52 +30,31 @@ sections.
 
 ## What draws what
 
-None of these imitates a picture. They draw geometry, linework and texture.
+| Library | Job |
+|---|---|
+| GSAP + ScrollTrigger | The page turn. One pin, one scrubbed timeline, `start: "top top"`. |
+| Radix UI | The project dialog: focus trap, escape, scroll lock, aria wiring. |
+| Paper.js + d3-delaunay | Voronoi cells, one page only, at 8% coverage, standing in for the fibre of the stock. |
 
-| Library | Job | Lives in |
-|---|---|---|
-| Paper.js | Voronoi cells standing in for paper fibre, drifting, opening around the pointer | `src/components/Voronoi.tsx` |
-| PixiJS | Procedural paper grain and old foxing stains, over the whole book | `src/components/WashLayer.tsx` |
-| Rough.js | Rules, rings, frames and ticks, re-inked on hover | `src/components/Ink.tsx` |
-| 2D canvas | Watercolour blooms that answer a hover | `src/components/Bloom.tsx` |
+Motion is GSAP throughout. Radix is what `shadcn/ui` is built on; its registry is
+unreachable from this environment, so the primitives are composed directly.
 
-The Voronoi follows the Paper.js example, with `d3-delaunay` doing the
-geometry and Paper.js the drawing. It is kept at low contrast on purpose.
-
-### Why blooms are not in the Pixi layer
-
-Each leaf transforms, which makes it a stacking context. A single shared
-canvas cannot sit between every page's background and its own text, so a
-bloom either vanished behind a page or stained the reading panel on top of
-it. `Bloom` therefore renders inside each leaf and ignores any spill whose
-coordinates fall outside its own box. `src/lib/wash.ts` is the bus between
-them, and its registry hangs off `globalThis` because the layer is code
-split and a module-local registry ends up duplicated across chunks.
-
-## Layering, inside a leaf
-
-```
-z-30  the opened detail panel
-z-20  the turn's shadow and crease
-z-10  everything readable
-z-1   watercolour blooms
-z-0   Voronoi fibre, page background
-```
-
-Paper grain is the exception: it is fixed at `z-60`, over the whole book,
-because grain sits on top of everything in a real sheet.
 
 ## Palette
 
+Three spot inks, the way a mid-century picture book was actually printed.
+Everything on the page is one of these or a true overprint of two.
+
 | Token | Value | Use |
 |---|---|---|
-| `forest` | `#334736` | the page |
-| `cream` | `#EEEBD3` | primary ink |
-| `terracotta` | `#E3655B` | accent, the only one |
-| `char` | `#1B211C` | the table the book lies on |
-| `gold` | `#D9A441` | dates, margin notes, the cover rule |
-| `clay` | `#7A4E3F` | the cover boards |
-| `sage` | `#9AA98E` | secondary ink |
+| `forest` | `#334736` | ground for the cover and the work page |
+| `paper` | `#EEEBD3` | ground for the hello page, and type on forest |
+| `flame` | `#E3655B` | ground for the last page, plates and meta elsewhere |
+| `ink` | `#16190F` | press black, the only type that holds on flame |
+
+No gradients, no shadows, no blur. Flat fields, square corners, 1px rules.
+Colour commits at page scale: each leaf gives its whole ground to one ink.
+
 
 ## Content
 
