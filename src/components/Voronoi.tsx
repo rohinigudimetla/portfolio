@@ -59,25 +59,20 @@ export default function Voronoi({
       const el = canvasRef.current;
 
       /**
-       * Paper's own data-paper-resize never picked up the laid-out size
-       * here, so the view stayed at the canvas default of 300x150 while CSS
-       * stretched it across the whole leaf. Everything was drawn a fifth of
-       * scale and blown up: huge cells, thick blurry strokes, and a pointer
-       * whose coordinates were in CSS pixels while the diagram lived in a
-       * different space, so the hover pushed cells nowhere near the cursor.
-       * The view is sized from the element here and kept in step below.
+       * Paper's data-paper-resize never picked up the laid-out size here, so
+       * the view kept the canvas element default of 300x150 while CSS
+       * stretched it across the leaf: cells far too large, strokes blurred by
+       * the upscale, and a pointer whose CSS-pixel coordinates addressed a
+       * different space entirely.
+       *
+       * Sizing it once was not enough either. These canvases live inside a
+       * pinned, 3D-transformed stage, and on first paint the box can measure
+       * zero, which left the diagram empty with nothing to trigger a redraw.
+       * The view is therefore synced from the element and retried until the
+       * element actually has a size.
        */
-      const fit = () => {
-        const r = el.getBoundingClientRect();
-        return { w: Math.max(2, Math.round(r.width)), h: Math.max(2, Math.round(r.height)) };
-      };
-      const first = fit();
-      el.width = first.w;
-      el.height = first.h;
-
       const scope = new paper.PaperScope();
       scope.setup(el);
-      scope.view.viewSize = new scope.Size(first.w, first.h);
 
       const MARGIN = 20;
       let w = scope.view.size.width;
@@ -217,9 +212,10 @@ export default function Voronoi({
       render();
 
       // Window-level, so nothing painted on top can swallow the hover.
+      let pending = 0;
       const onPointer = (e: PointerEvent) => {
-        const r = canvasRef.current?.getBoundingClientRect();
-        if (!r || r.width < 2) return;
+        const r = el.getBoundingClientRect();
+        if (r.width < 2) return;
         const x = e.clientX - r.left;
         const y = e.clientY - r.top;
         pointer.current = {
@@ -227,22 +223,41 @@ export default function Voronoi({
           y,
           on: x > -80 && y > -80 && x < r.width + 80 && y < r.height + 80,
         };
-        render();
+        // pointermove outruns the frame rate; one redraw per frame is plenty.
+        if (pending) return;
+        pending = requestAnimationFrame(() => {
+          pending = 0;
+          render();
+        });
       };
 
-      const ro = new ResizeObserver(() => {
-        const { w: nw, h: nh } = fit();
+      let raf = 0;
+      const sync = () => {
+        const r = el.getBoundingClientRect();
+        const nw = Math.round(r.width);
+        const nh = Math.round(r.height);
+        if (nw < 2 || nh < 2) {
+          // Not laid out yet. Try again on the next frame rather than
+          // leaving an empty diagram behind.
+          raf = requestAnimationFrame(sync);
+          return;
+        }
         if (nw === scope.view.size.width && nh === scope.view.size.height) return;
         scope.view.viewSize = new scope.Size(nw, nh);
         buildHive();
         render();
-      });
+      };
+
+      const ro = new ResizeObserver(sync);
       ro.observe(el);
+      sync();
 
       window.addEventListener("pointermove", onPointer, { passive: true });
 
       cleanup = () => {
         ro.disconnect();
+        cancelAnimationFrame(raf);
+        cancelAnimationFrame(pending);
         window.removeEventListener("pointermove", onPointer);
         scope.view?.remove();
         scope.project?.remove();

@@ -4,6 +4,7 @@ import { useRef } from "react";
 import gsap from "gsap";
 import { useLeafReveal } from "@/lib/useLeafReveal";
 import { ArrowUpRight, DownloadSimple } from "@phosphor-icons/react";
+import Grain from "../Grain";
 import NameMark from "../NameMark";
 import { person } from "@/content/book";
 
@@ -55,6 +56,7 @@ export default function Contact() {
       className="relative flex h-full w-full flex-col overflow-y-auto"
       style={{ background: "var(--color-ember)" }}
     >
+      <Grain opacity={0.3} />
       <NameMark tone="var(--color-butter)" />
 
       <div className="flex flex-1 flex-col justify-center px-[7vw] py-[12vh] sm:px-[6vw]">

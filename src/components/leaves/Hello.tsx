@@ -4,6 +4,7 @@ import { useRef } from "react";
 import gsap from "gsap";
 import { useLeafReveal } from "@/lib/useLeafReveal";
 import Voronoi from "../Voronoi";
+import Grain from "../Grain";
 import NameMark from "../NameMark";
 import { hello, note, tools, person } from "@/content/book";
 
@@ -55,7 +56,8 @@ export default function Hello() {
       className="relative h-full w-full overflow-hidden"
       style={{ background: "var(--color-bark)" }}
     >
-      <Voronoi cell={200} opacity={0.34} />
+      <Grain />
+      <Voronoi cell={200} opacity={0.34} className="z-[1]" />
       <NameMark tone="var(--color-moss-lit)" />
 
       <div className="relative z-10 flex h-full flex-col justify-center px-[7vw] py-[12vh] sm:px-[6vw]">

@@ -4,6 +4,7 @@ import { useRef } from "react";
 import gsap from "gsap";
 import { useLeafReveal } from "@/lib/useLeafReveal";
 import Voronoi from "../Voronoi";
+import Grain from "../Grain";
 import NameMark from "../NameMark";
 import { schooling } from "@/content/book";
 
@@ -38,13 +39,14 @@ export default function Education() {
     <div
       ref={root}
       className="relative h-full w-full overflow-hidden"
-      style={{ background: "var(--color-moss)" }}
+      style={{ background: "var(--color-butter)" }}
     >
-      <Voronoi cell={190} opacity={0.26} stroke="#2a2d1d" accent="#fce7bc" />
-      <NameMark tone="var(--color-bark)" />
+      <Grain />
+      <Voronoi cell={190} opacity={0.24} className="z-[1]" />
+      <NameMark tone="var(--color-moss)" />
 
       <div className="relative z-10 flex h-full flex-col justify-center px-[7vw] sm:px-[6vw]">
-        <p data-rise className="t-meta mb-12" style={{ color: "var(--color-butter)", opacity: 0.85 }}>
+        <p data-rise className="t-meta mb-12" style={{ color: "var(--color-ember)" }}>
           Education
         </p>
 
@@ -55,35 +57,35 @@ export default function Education() {
               data-rise
               className="flex flex-wrap items-baseline gap-x-8 gap-y-2 py-8"
               style={{
-                borderTop: "1px solid color-mix(in srgb, #2a2d1d 45%, transparent)",
+                borderTop: "1px solid var(--color-moss)",
                 ...(i === schooling.length - 1
-                  ? { borderBottom: "1px solid color-mix(in srgb, #2a2d1d 45%, transparent)" }
+                  ? { borderBottom: "1px solid var(--color-moss)" }
                   : {}),
               }}
             >
               <span
                 className="t-meta w-16 shrink-0"
-                style={{ color: "var(--color-butter)" }}
+                style={{ color: "var(--color-ember)" }}
               >
                 {s.when}
               </span>
               <span className="min-w-0 flex-1">
                 <span
                   className="t-lead block text-[clamp(1.4rem,3.6vw,2.4rem)]"
-                  style={{ color: "var(--color-butter)" }}
+                  style={{ color: "var(--color-bark)" }}
                 >
                   {s.school}
                 </span>
                 <span
                   className="mt-2 block text-[1.08rem]"
-                  style={{ color: "var(--color-butter)", opacity: 0.86 }}
+                  style={{ color: "var(--color-moss)" }}
                 >
                   {s.award}
                 </span>
               </span>
               <span
                 className="t-meta shrink-0"
-                style={{ color: "var(--color-butter)", opacity: 0.8 }}
+                style={{ color: "var(--color-moss)" }}
               >
                 {s.where}
               </span>

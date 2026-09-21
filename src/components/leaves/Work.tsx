@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { useLeafReveal } from "@/lib/useLeafReveal";
 import { ArrowUpRight } from "@phosphor-icons/react";
 import Voronoi from "../Voronoi";
+import Grain from "../Grain";
 import NameMark from "../NameMark";
 import {
   Dialog,
@@ -56,7 +57,8 @@ export default function Work() {
       className="relative h-full w-full overflow-hidden"
       style={{ background: "var(--color-butter)" }}
     >
-      <Voronoi cell={210} opacity={0.26} />
+      <Grain />
+      <Voronoi cell={210} opacity={0.26} className="z-[1]" />
       <NameMark tone="var(--color-moss)" />
 
       {/* Small, in the margin. Not a hero. */}

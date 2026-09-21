@@ -3,16 +3,16 @@
 import { useEffect, useState } from "react";
 
 /**
- * Paper.
+ * Paper tooth, for a background and nothing else.
  *
- * A noise tile computed once in a canvas and repeated across the viewport,
- * with a second pass of long fibres for the direction that pulp lies in.
- * `overlay` rather than `multiply`, because this sits over both the dark
- * ground and the cream one and multiply only works on the light.
- *
- * Fixed and pointer-transparent, so it never joins a scrolling repaint.
+ * This used to be one fixed layer blended over the whole page, which put
+ * grain across the type and the controls as well as the ground, and forced
+ * the compositor to re-blend a full viewport over four transformed leaves
+ * on every scroll frame. It now sits inside a leaf, directly above that
+ * leaf's flat colour and below everything readable, so it textures the
+ * background only and blends against a single flat fill.
  */
-export default function Grain() {
+export default function Grain({ opacity = 0.34 }: { opacity?: number }) {
   const [tile, setTile] = useState<string | null>(null);
 
   useEffect(() => {
@@ -33,7 +33,6 @@ export default function Grain() {
     };
 
     for (let i = 0; i < size * size; i++) {
-      // Mostly fine tooth, with the occasional heavier fleck.
       const v = rnd() * 0.62 + (rnd() > 0.988 ? 0.38 : 0);
       const level = Math.round(v * 255);
       const o = i * 4;
@@ -44,7 +43,6 @@ export default function Grain() {
     }
     ctx.putImageData(img, 0, 0);
 
-    // Fibres, laid down the way handmade stock pulls.
     ctx.globalAlpha = 0.16;
     ctx.strokeStyle = "#ffffff";
     for (let i = 0; i < size / 2.4; i++) {
@@ -67,13 +65,13 @@ export default function Grain() {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0 z-[70]"
+      className="pointer-events-none absolute inset-0 z-0"
       style={{
         backgroundImage: `url(${tile})`,
         backgroundRepeat: "repeat",
         backgroundSize: "220px 220px",
         mixBlendMode: "overlay",
-        opacity: 0.3,
+        opacity,
       }}
     />
   );

@@ -46,7 +46,9 @@ export default function Book({ leaves }: { leaves: ReactNode[] }) {
           trigger: wrapRef.current,
           start: "top top",
           end: "bottom bottom",
-          scrub: 0.15,
+          // true is 1:1 with the scrollbar. A numeric scrub is a lag in
+          // seconds, which is what made the turn feel like it was dragging.
+          scrub: true,
           pin: stageRef.current,
           // The wrapper already supplies the scroll length, so ScrollTrigger
           // must not add its own spacer on top of it. With the default the
@@ -106,7 +108,12 @@ export default function Book({ leaves }: { leaves: ReactNode[] }) {
             key={i}
             data-leaf
             className="absolute inset-0"
-            style={{ zIndex: total - i, backfaceVisibility: "hidden" }}
+            style={{
+              zIndex: total - i,
+              backfaceVisibility: "hidden",
+              willChange: "transform",
+              contain: "paint",
+            }}
           >
             {leaf}
             <div
