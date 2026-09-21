@@ -215,13 +215,21 @@ export default function Voronoi({
       let pending = 0;
       const onPointer = (e: PointerEvent) => {
         const r = el.getBoundingClientRect();
-        if (r.width < 2) return;
-        const x = e.clientX - r.left;
-        const y = e.clientY - r.top;
+        if (r.width < 2 || el.offsetWidth < 2) return;
+        // The rect is in viewport space and may be scaled by an ancestor
+        // transform; the diagram is in layout space. Convert between them.
+        const sx = el.offsetWidth / r.width;
+        const sy = el.offsetHeight / r.height;
+        const x = (e.clientX - r.left) * sx;
+        const y = (e.clientY - r.top) * sy;
         pointer.current = {
           x,
           y,
-          on: x > -80 && y > -80 && x < r.width + 80 && y < r.height + 80,
+          on:
+            x > -80 &&
+            y > -80 &&
+            x < el.offsetWidth + 80 &&
+            y < el.offsetHeight + 80,
         };
         // pointermove outruns the frame rate; one redraw per frame is plenty.
         if (pending) return;
@@ -233,12 +241,15 @@ export default function Voronoi({
 
       let raf = 0;
       const sync = () => {
-        const r = el.getBoundingClientRect();
-        const nw = Math.round(r.width);
-        const nh = Math.round(r.height);
+        // offsetWidth/offsetHeight, never getBoundingClientRect. These
+        // canvases sit inside a 3D-transformed stage, and a rect is the
+        // element's *projected* box: any transform on an ancestor, or a
+        // host that scales its frame, shrinks it. offset* reports the
+        // layout size and ignores transforms entirely, which is what the
+        // drawing space has to match.
+        const nw = el.offsetWidth;
+        const nh = el.offsetHeight;
         if (nw < 2 || nh < 2) {
-          // Not laid out yet. Try again on the next frame rather than
-          // leaving an empty diagram behind.
           raf = requestAnimationFrame(sync);
           return;
         }
