@@ -139,9 +139,12 @@ export default function Book({ leaves }: { leaves: ReactNode[] }) {
        */
       const turnTo = (target: number, force = false) => {
         const i = gsap.utils.clamp(0, turns, Math.round(target));
-        if (busy && !force) return;
+        if (busy && !force) return false;
         const from = tl.time();
-        if (Math.abs(from - i) < 0.001) return;
+        // Already there: a gesture onward from the last page, or back from
+        // the first. Reported so the caller does not disarm itself waiting
+        // for a turn that never starts.
+        if (Math.abs(from - i) < 0.001) return false;
 
         const steps = Math.max(1, Math.abs(i - from));
         const token = ++seq;
@@ -169,6 +172,7 @@ export default function Book({ leaves }: { leaves: ReactNode[] }) {
             scheduleRearm();
           },
         });
+        return true;
       };
 
       gotoRef.current = (i: number) => turnTo(i, true);
@@ -205,39 +209,117 @@ export default function Book({ leaves }: { leaves: ReactNode[] }) {
        * directly. The book re-arms only once the turn has landed and no
        * input has arrived for a while.
        */
-      const QUIET_MS = 220;
+      /**
+       * One push is one page, and the book is never dead.
+       *
+       * A wheel or trackpad delivers a stream, not an event, and a flick keeps
+       * delivering through its momentum after the fingers have left. Guarding
+       * only on "a turn is running" lets the tail of one push start the next
+       * turn the moment the first lands, which turned two and three pages on a
+       * long throw. Observer's own onStop is no help: for a wheel it fires
+       * every couple of hundred milliseconds *during* a continuous stream
+       * rather than at the end of one.
+       *
+       * Waiting for a gap in the stream fixes the flick and breaks the
+       * opposite case, because someone scrolling steadily never produces a
+       * gap: the book went dead for as long as they kept scrolling, which of
+       * course made them scroll more. So there are three ways back in, and
+       * each answers a different input:
+       *
+       *   A finger has a definite end. Between touchstart and touchend the
+       *   book stays shut however long and slow the drag is, and the lift
+       *   opens it. No heuristic can beat knowing.
+       *
+       *   A mouse notch is a separate intent, and it arrives as one event
+       *   with a gap in front of it and its full size. Momentum arrives every
+       *   frame and fades. An event with both room in front of it and its
+       *   stream's full weight behind it is a new push, so it is honoured at
+       *   once and a spun wheel keeps turning pages.
+       *
+       *   Otherwise the stream has to go quiet, with a long stop as a floor
+       *   under it so nothing can hold the book shut indefinitely.
+       */
+      const QUIET_MS = 200;
+      /** A gap this long in front of an event means a hand did it again. */
+      const DISCRETE_MS = 40;
+      /** Momentum fades; a fresh push lands near its stream's peak. */
+      const FRESH_RATIO = 0.6;
+      /** Nothing keeps the book shut longer than this. */
+      const CEILING_MS = 2500;
+
       let armed = true;
       let lastInput = 0;
+      let lastWheel = 0;
+      let streamPeak = 0;
+      let touching = false;
       let armTimer = 0;
 
-      const noteInput = () => {
+      const openUp = () => {
+        if (!busy && !touching) armed = true;
+      };
+
+      // Passive, and separate from Observer, purely to read the shape of the
+      // stream: when each event landed and how hard.
+      const onWheelRaw = (e: WheelEvent) => {
+        const now = performance.now();
+        const gap = now - lastWheel;
+        lastWheel = now;
+        lastInput = now;
+
+        const mag = Math.abs(e.deltaY);
+        if (gap >= QUIET_MS) streamPeak = mag;
+        else streamPeak = Math.max(streamPeak, mag);
+
+        if (gap >= DISCRETE_MS && mag >= streamPeak * FRESH_RATIO) openUp();
+      };
+      const onTouchStart = () => {
+        touching = true;
         lastInput = performance.now();
       };
-      // Passive and separate from Observer, purely to timestamp the stream.
-      window.addEventListener("wheel", noteInput, { passive: true });
-      window.addEventListener("touchmove", noteInput, { passive: true });
+      const onTouchMove = () => {
+        lastInput = performance.now();
+      };
+      const onTouchEnd = () => {
+        touching = false;
+        lastInput = performance.now();
+      };
+
+      window.addEventListener("wheel", onWheelRaw, { passive: true });
+      window.addEventListener("touchstart", onTouchStart, { passive: true });
+      window.addEventListener("touchmove", onTouchMove, { passive: true });
+      window.addEventListener("touchend", onTouchEnd, { passive: true });
+      window.addEventListener("touchcancel", onTouchEnd, { passive: true });
 
       const scheduleRearm = () => {
         window.clearTimeout(armTimer);
+        const deadline = performance.now() + CEILING_MS;
         const tick = () => {
-          if (busy) {
+          if (busy || touching) {
             armTimer = window.setTimeout(tick, 60);
             return;
           }
-          const gap = performance.now() - lastInput;
-          if (gap >= QUIET_MS) {
+          const now = performance.now();
+          const gap = now - lastInput;
+          if (gap >= QUIET_MS || now >= deadline) {
             armed = true;
             return;
           }
-          armTimer = window.setTimeout(tick, QUIET_MS - gap + 10);
+          armTimer = window.setTimeout(
+            tick,
+            Math.min(QUIET_MS - gap, Math.max(deadline - now, 0)) + 10,
+          );
         };
         armTimer = window.setTimeout(tick, 40);
       };
 
       const fire = (dir: number) => {
         if (!armed || busy) return;
-        armed = false;
-        turnTo(at + dir);
+        // Disarm only if a turn actually began. At either end of the book
+        // there is nothing to turn to, and disarming for a tween that never
+        // runs means nothing ever re-arms it: the book would take one gesture
+        // at the last page and then refuse every gesture after it, including
+        // the ones trying to come back.
+        if (turnTo(at + dir)) armed = false;
       };
 
       // A dialog owns its own scrolling, and the panel over the book is one.
@@ -302,8 +384,11 @@ export default function Book({ leaves }: { leaves: ReactNode[] }) {
         wheel.kill();
         drag.kill();
         window.clearTimeout(armTimer);
-        window.removeEventListener("wheel", noteInput);
-        window.removeEventListener("touchmove", noteInput);
+        window.removeEventListener("wheel", onWheelRaw);
+        window.removeEventListener("touchstart", onTouchStart);
+        window.removeEventListener("touchmove", onTouchMove);
+        window.removeEventListener("touchend", onTouchEnd);
+        window.removeEventListener("touchcancel", onTouchEnd);
         window.removeEventListener("keydown", onKey);
       };
     },
