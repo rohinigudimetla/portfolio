@@ -5,6 +5,12 @@ import { useEffect } from "react";
 export const LEAF_ACTIVE = "leaf:active";
 
 /**
+ * Nav asks the book to turn to a leaf. Book owns the scroll position, so it
+ * listens for this rather than exposing a ref up through the tree.
+ */
+export const BOOK_GOTO = "book:goto";
+
+/**
  * Runs a leaf's entrance the first time that leaf becomes the one on top.
  *
  * Leaves cannot use ScrollTrigger for their own reveals: they sit inside a

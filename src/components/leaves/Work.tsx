@@ -6,7 +6,6 @@ import { useLeafReveal } from "@/lib/useLeafReveal";
 import { ArrowUpRight } from "@phosphor-icons/react";
 import Voronoi from "../Voronoi";
 import Grain from "../Grain";
-import NameMark from "../NameMark";
 import {
   Dialog,
   DialogContent,
@@ -59,7 +58,6 @@ export default function Work() {
     >
       <Grain />
       <Voronoi cell={210} opacity={0.26} className="z-[1]" />
-      <NameMark tone="var(--color-moss)" />
 
       {/* Small, in the margin. Not a hero. */}
       <img
@@ -68,12 +66,12 @@ export default function Work() {
         aria-hidden="true"
         width={310}
         height={310}
-        className="pointer-events-none absolute right-[6vw] bottom-[9vh] z-40 w-[clamp(104px,13vw,178px)] select-none"
+        className="pointer-events-none absolute right-[6vw] bottom-[5vh] z-40 w-[clamp(88px,13vw,178px)] select-none"
         style={{ transform: "rotate(3deg)" }}
       />
 
-      <div className="relative z-10 flex h-full flex-col justify-center px-[7vw] pb-[6vh] sm:px-[6vw]">
-        <p className="t-meta mb-12" style={{ color: "var(--color-ember)" }}>
+      <div className="relative z-10 flex h-full flex-col justify-center px-[7vw] pt-[13vh] pb-[7vh] sm:px-[6vw]">
+        <p className="t-meta mb-8 sm:mb-12" style={{ color: "var(--color-ember)" }}>
           Selected work
         </p>
 
@@ -83,8 +81,9 @@ export default function Work() {
               <button
                 type="button"
                 onClick={() => setOpen(e)}
-                className="group flex w-full cursor-pointer items-baseline justify-between gap-6
-                           border-0 border-t bg-transparent py-7 text-left
+                className="group flex w-full cursor-pointer flex-col items-start gap-1.5
+                           border-0 border-t bg-transparent py-6 text-left
+                           sm:flex-row sm:items-baseline sm:justify-between sm:gap-6 sm:py-7
                            transition-colors duration-200
                            hover:bg-[var(--color-ember)]/12
                            focus-visible:outline-3 focus-visible:outline-[var(--color-ember)]"
@@ -92,7 +91,7 @@ export default function Work() {
               >
                 <span className="flex flex-wrap items-baseline gap-x-5 gap-y-1">
                   <span
-                    className="t-lead text-[clamp(1.6rem,4.4vw,3rem)] transition-colors duration-200 group-hover:text-[var(--color-ember)]"
+                    className="t-lead text-[clamp(1.7rem,6.4vw,3rem)] transition-colors duration-200 group-hover:text-[var(--color-ember)]"
                     style={{ color: "var(--color-bark)" }}
                   >
                     {e.title}

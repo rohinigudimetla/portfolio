@@ -5,7 +5,6 @@ import gsap from "gsap";
 import { useLeafReveal } from "@/lib/useLeafReveal";
 import Voronoi from "../Voronoi";
 import Grain from "../Grain";
-import NameMark from "../NameMark";
 import { hello, note, tools, person } from "@/content/book";
 
 /**
@@ -58,7 +57,6 @@ export default function Hello() {
     >
       <Grain />
       <Voronoi cell={200} opacity={0.34} className="z-[1]" />
-      <NameMark tone="var(--color-moss-lit)" />
 
       {/* Set in the margin, deliberately small. Lifted out of the content
           column and above it, so the illustration sits on top of everything
@@ -70,12 +68,12 @@ export default function Hello() {
         width={360}
         height={329}
         aria-hidden="true"
-        className="pointer-events-none absolute right-[7vw] bottom-[22vh] z-40 w-[clamp(130px,17vw,240px)] select-none"
+        className="pointer-events-none absolute right-[6vw] bottom-[24vh] z-40 w-[clamp(112px,17vw,240px)] select-none"
         style={{ transform: "rotate(-4deg)" }}
       />
 
 
-      <div className="relative z-10 flex h-full flex-col justify-center px-[7vw] py-[12vh] sm:px-[6vw]">
+      <div className="relative z-10 flex h-full flex-col justify-center px-[7vw] pt-[14vh] pb-[10vh] sm:px-[6vw] sm:py-[12vh]">
         <div className="max-w-[54rem]">
           <p
             data-rise

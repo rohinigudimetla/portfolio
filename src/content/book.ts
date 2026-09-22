@@ -19,7 +19,7 @@ export const person = {
 };
 
 /** The one sentence on the first page. */
-export const hello = "hi, my name is Rohini and I'm a software developer.";
+export const hello = "Hi, my name is Rohini and I'm a software developer.";
 
 /** Set beneath it, small. Four words, not a paragraph. */
 export const note = "I build things that stay up.";

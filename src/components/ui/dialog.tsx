@@ -41,8 +41,10 @@ const DialogContent = React.forwardRef<
   React.ComponentRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
     closeLabel?: string;
+    /** For panels that draw their own close control, like the nav menu. */
+    hideClose?: boolean;
   }
->(({ className, children, closeLabel = "Close", ...props }, ref) => (
+>(({ className, children, closeLabel = "Close", hideClose, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
@@ -56,6 +58,7 @@ const DialogContent = React.forwardRef<
       {...props}
     >
       {children}
+      {!hideClose && (
       <DialogPrimitive.Close
         aria-label={closeLabel}
         className="fixed top-6 right-6 z-10 flex h-12 w-12 items-center justify-center
@@ -67,6 +70,7 @@ const DialogContent = React.forwardRef<
       >
         <X size={20} weight="bold" />
       </DialogPrimitive.Close>
+      )}
     </DialogPrimitive.Content>
   </DialogPortal>
 ));

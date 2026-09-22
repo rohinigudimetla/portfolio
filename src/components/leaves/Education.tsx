@@ -5,7 +5,6 @@ import gsap from "gsap";
 import { useLeafReveal } from "@/lib/useLeafReveal";
 import Voronoi from "../Voronoi";
 import Grain from "../Grain";
-import NameMark from "../NameMark";
 import { schooling } from "@/content/book";
 
 /**
@@ -43,10 +42,9 @@ export default function Education() {
     >
       <Grain />
       <Voronoi cell={190} opacity={0.24} className="z-[1]" />
-      <NameMark tone="var(--color-moss)" />
 
-      <div className="relative z-10 flex h-full flex-col justify-center px-[7vw] sm:px-[6vw]">
-        <p data-rise className="t-meta mb-12" style={{ color: "var(--color-ember)" }}>
+      <div className="relative z-10 flex h-full flex-col justify-center px-[7vw] pt-[13vh] pb-[7vh] sm:px-[6vw]">
+        <p data-rise className="t-meta mb-8 sm:mb-12" style={{ color: "var(--color-ember)" }}>
           Education
         </p>
 
@@ -55,7 +53,7 @@ export default function Education() {
             <li
               key={s.school}
               data-rise
-              className="flex flex-wrap items-baseline gap-x-8 gap-y-2 py-8"
+              className="py-7 sm:grid sm:grid-cols-[4.5rem_minmax(0,1fr)_auto] sm:items-baseline sm:gap-x-8"
               style={{
                 borderTop: "1px solid var(--color-moss)",
                 ...(i === schooling.length - 1
@@ -63,32 +61,41 @@ export default function Education() {
                   : {}),
               }}
             >
-              <span
-                className="t-meta w-16 shrink-0"
-                style={{ color: "var(--color-ember)" }}
-              >
-                {s.when}
-              </span>
-              <span className="min-w-0 flex-1">
+              {/* Year and place share a line of their own on a phone, then
+                  become the outer columns of the record once there is width
+                  for three. `contents` dissolves this wrapper at sm so the
+                  two spans sit in the grid directly, and each one names its
+                  column, since dissolving it also hands the grid their DOM
+                  order rather than their reading order. */}
+              <div className="mb-3 flex items-baseline justify-between gap-4 sm:contents">
                 <span
-                  className="t-lead block text-[clamp(1.4rem,3.6vw,2.4rem)]"
+                  className="t-meta sm:col-start-1 sm:row-start-1"
+                  style={{ color: "var(--color-ember)" }}
+                >
+                  {s.when}
+                </span>
+                <span
+                  className="t-meta text-right sm:col-start-3 sm:row-start-1"
+                  style={{ color: "var(--color-moss)" }}
+                >
+                  {s.where}
+                </span>
+              </div>
+
+              <div className="min-w-0 sm:col-start-2 sm:row-start-1">
+                <span
+                  className="t-lead block text-[clamp(1.5rem,6vw,2.4rem)]"
                   style={{ color: "var(--color-bark)" }}
                 >
                   {s.school}
                 </span>
                 <span
-                  className="mt-2 block text-[1.08rem]"
+                  className="mt-2 block text-[0.98rem] sm:text-[1.08rem]"
                   style={{ color: "var(--color-moss)" }}
                 >
                   {s.award}
                 </span>
-              </span>
-              <span
-                className="t-meta shrink-0"
-                style={{ color: "var(--color-moss)" }}
-              >
-                {s.where}
-              </span>
+              </div>
             </li>
           ))}
         </ul>

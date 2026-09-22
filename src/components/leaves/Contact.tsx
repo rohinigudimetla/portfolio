@@ -5,7 +5,6 @@ import gsap from "gsap";
 import { useLeafReveal } from "@/lib/useLeafReveal";
 import { ArrowUpRight, DownloadSimple } from "@phosphor-icons/react";
 import Grain from "../Grain";
-import NameMark from "../NameMark";
 import { person } from "@/content/book";
 
 /**
@@ -57,9 +56,8 @@ export default function Contact() {
       style={{ background: "var(--color-ember)" }}
     >
       <Grain opacity={0.3} />
-      <NameMark tone="var(--color-butter)" />
 
-      <div className="flex flex-1 flex-col justify-center px-[7vw] py-[12vh] sm:px-[6vw]">
+      <div className="flex flex-1 flex-col justify-center px-[7vw] pt-[14vh] pb-[9vh] sm:px-[6vw] sm:py-[12vh]">
         <h2
           data-rise
           className="t-poster text-[clamp(2.8rem,9.5vw,7rem)]"
@@ -68,7 +66,7 @@ export default function Contact() {
           Say hello
         </h2>
 
-        <ul className="mt-12 w-full max-w-[52rem]">
+        <ul className="mt-8 w-full max-w-[52rem] sm:mt-12">
           {links.map((l, i) => (
             <li key={l.href} data-rise>
               <a
@@ -76,17 +74,21 @@ export default function Contact() {
                 {...(l.href.startsWith("http")
                   ? { target: "_blank", rel: "noreferrer noopener" }
                   : {})}
-                className="flex items-center justify-between gap-6 py-5 transition-opacity duration-200 hover:opacity-70"
+                className="flex items-center justify-between gap-4 py-4 transition-opacity duration-200 hover:opacity-70 sm:gap-6 sm:py-5"
                 style={{
                   borderTop:
                     i === 0 ? "none" : "1px solid color-mix(in srgb, #fce7bc 45%, transparent)",
                   color: "var(--color-butter)",
                 }}
               >
-                <span className="text-[clamp(1.25rem,2.7vw,1.95rem)] font-bold tracking-[-0.02em]">
+                {/* Cream on ember is 3.78:1, which only clears AA as large
+                    text, so these never drop below 1.2rem bold. A phone has
+                    no room for the longest of them at that size, so they
+                    wrap mid-token rather than shrink out of compliance. */}
+                <span className="min-w-0 text-[clamp(1.2rem,4.6vw,1.95rem)] font-bold tracking-[-0.02em] [overflow-wrap:anywhere]">
                   {l.value}
                 </span>
-                <ArrowUpRight size={22} weight="bold" aria-hidden="true" />
+                <ArrowUpRight size={20} weight="bold" aria-hidden="true" className="shrink-0" />
               </a>
             </li>
           ))}
@@ -96,7 +98,7 @@ export default function Contact() {
           data-rise
           href={person.resume}
           download=""
-          className="t-meta mt-12 inline-flex w-fit items-center gap-3 px-7 py-4 transition-opacity duration-150 hover:opacity-85"
+          className="t-meta mt-10 inline-flex w-fit sm:mt-12 items-center gap-3 px-7 py-4 transition-opacity duration-150 hover:opacity-85"
           style={{ background: "var(--color-bark)", color: "var(--color-butter)" }}
         >
           <DownloadSimple size={16} weight="bold" aria-hidden="true" />
