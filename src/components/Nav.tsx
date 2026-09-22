@@ -130,11 +130,10 @@ export default function Nav() {
             type="button"
             onClick={() => setOpen(true)}
             aria-label="Open menu"
-            className="t-meta pointer-events-auto -mr-3 flex min-h-11 cursor-pointer items-center gap-2 border-0 bg-transparent px-3 py-2 transition-colors duration-500 lg:hidden"
+            className="pointer-events-auto -mr-3 flex min-h-11 min-w-11 cursor-pointer items-center justify-center border-0 bg-transparent px-3 py-2 transition-colors duration-500 lg:hidden"
             style={{ color: ink.fg, background: ink.plate }}
           >
-            Menu
-            <List size={16} weight="bold" aria-hidden="true" />
+            <List size={22} weight="bold" aria-hidden="true" />
           </button>
         </div>
       </header>
@@ -156,11 +155,10 @@ export default function Nav() {
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label="Close menu"
-                className="t-meta -mr-3 flex min-h-11 cursor-pointer items-center gap-2 border-0 bg-transparent px-3 py-2"
+                className="-mr-3 flex min-h-11 min-w-11 cursor-pointer items-center justify-center border-0 bg-transparent px-3 py-2"
                 style={{ color: "var(--color-butter)" }}
               >
-                Close
-                <X size={16} weight="bold" aria-hidden="true" />
+                <X size={22} weight="bold" aria-hidden="true" />
               </button>
             </div>
 
