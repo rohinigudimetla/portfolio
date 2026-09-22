@@ -166,11 +166,79 @@ export default function Book({ leaves }: { leaves: ReactNode[] }) {
             if (token !== seq) return;
             busy = false;
             announce(i);
+            scheduleRearm();
           },
         });
       };
 
       gotoRef.current = (i: number) => turnTo(i, true);
+
+      /**
+       * A gesture has to END before the book will take another one.
+       *
+       * "Is a turn running" is not enough of a guard on its own. A wheel or a
+       * trackpad does not deliver one event per gesture, it delivers a stream,
+       * and a flick keeps delivering through its momentum for some time after
+       * the fingers have left. So a single push would turn one page, and then
+       * the tail of that same push — still arriving, now that the tween had
+       * finished — would turn another, and sometimes a third. The longer the
+       * gesture, the longer the tail, which is exactly the "a tiny bit longer
+       * and it does two or three" shape of it.
+       *
+       * Observer reports the end of a gesture as well as its start, so the
+       * book re-arms only when the stream has actually gone quiet AND the turn
+       * it started has landed. One push is one page however hard it is thrown.
+       */
+      /**
+       * One push is one page, however hard it is thrown.
+       *
+       * A wheel or trackpad does not deliver one event per gesture. It
+       * delivers a stream, and a flick keeps delivering through its momentum
+       * long after the fingers have left, so guarding only on "a turn is
+       * running" lets the tail of one push start a second and third turn the
+       * moment each turn lands. Observer's own onStop is no help here: for a
+       * wheel it fires every couple of hundred milliseconds *during* a
+       * continuous stream, not at the end of one, so re-arming on it re-arms
+       * mid-flick.
+       *
+       * The gap between events is the honest signal, so it is measured
+       * directly. The book re-arms only once the turn has landed and no
+       * input has arrived for a while.
+       */
+      const QUIET_MS = 220;
+      let armed = true;
+      let lastInput = 0;
+      let armTimer = 0;
+
+      const noteInput = () => {
+        lastInput = performance.now();
+      };
+      // Passive and separate from Observer, purely to timestamp the stream.
+      window.addEventListener("wheel", noteInput, { passive: true });
+      window.addEventListener("touchmove", noteInput, { passive: true });
+
+      const scheduleRearm = () => {
+        window.clearTimeout(armTimer);
+        const tick = () => {
+          if (busy) {
+            armTimer = window.setTimeout(tick, 60);
+            return;
+          }
+          const gap = performance.now() - lastInput;
+          if (gap >= QUIET_MS) {
+            armed = true;
+            return;
+          }
+          armTimer = window.setTimeout(tick, QUIET_MS - gap + 10);
+        };
+        armTimer = window.setTimeout(tick, 40);
+      };
+
+      const fire = (dir: number) => {
+        if (!armed || busy) return;
+        armed = false;
+        turnTo(at + dir);
+      };
 
       // A dialog owns its own scrolling, and the panel over the book is one.
       const inDialog = (e: Event) =>
@@ -199,15 +267,15 @@ export default function Book({ leaves }: { leaves: ReactNode[] }) {
       const wheel = Observer.create({
         ...shared,
         type: "wheel",
-        onDown: () => turnTo(at + 1),
-        onUp: () => turnTo(at - 1),
+        onDown: () => fire(1),
+        onUp: () => fire(-1),
       });
 
       const drag = Observer.create({
         ...shared,
         type: "touch,pointer",
-        onUp: () => turnTo(at + 1),
-        onDown: () => turnTo(at - 1),
+        onUp: () => fire(1),
+        onDown: () => fire(-1),
       });
 
       const onKey = (e: KeyboardEvent) => {
@@ -233,6 +301,9 @@ export default function Book({ leaves }: { leaves: ReactNode[] }) {
         gotoRef.current = null;
         wheel.kill();
         drag.kill();
+        window.clearTimeout(armTimer);
+        window.removeEventListener("wheel", noteInput);
+        window.removeEventListener("touchmove", noteInput);
         window.removeEventListener("keydown", onKey);
       };
     },

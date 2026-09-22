@@ -12,17 +12,15 @@ const SECTIONS = ["Intro", "Work", "Education", "Contact"];
 /**
  * Ink per leaf, because the nav is fixed and the grounds move underneath it.
  *
- * Nothing in the set reaches 4.5:1 on ember, so the labels cannot simply
- * recolour for the last leaf: butter on ember is 3.78:1, bark on ember 3.07:1,
- * and these labels are 11.5px, far below the large-text exemption. The page
- * already answers this — the resume button on that same leaf is a bark plate —
- * so the nav takes a bark plate there too and reads at 11.6:1 on it.
+ * Cream on ember is 3.78:1. That clears AA for large text and not for these
+ * 11.5px labels, which is why they briefly sat on a bark plate; the plate was
+ * not wanted, so the labels take the same cream as the rest of that page.
  */
 const INK = [
-  { fg: "var(--color-butter)", dim: "var(--color-moss-lit)", plate: "transparent" },
-  { fg: "var(--color-bark)", dim: "var(--color-moss)", plate: "transparent" },
-  { fg: "var(--color-bark)", dim: "var(--color-moss)", plate: "transparent" },
-  { fg: "var(--color-butter)", dim: "var(--color-moss-lit)", plate: "var(--color-bark)" },
+  { fg: "var(--color-butter)", dim: "var(--color-moss-lit)" },
+  { fg: "var(--color-bark)", dim: "var(--color-moss)" },
+  { fg: "var(--color-bark)", dim: "var(--color-moss)" },
+  { fg: "var(--color-butter)", dim: "color-mix(in srgb, #fce7bc 78%, #c94c38)" },
 ];
 
 /**
@@ -97,7 +95,7 @@ export default function Nav() {
             type="button"
             onClick={() => goto(0)}
             className="t-meta pointer-events-auto -mx-3 cursor-pointer border-0 bg-transparent px-3 py-2 text-left transition-colors duration-500"
-            style={{ color: ink.fg, background: ink.plate }}
+            style={{ color: ink.fg }}
           >
             {person.name}
           </button>
@@ -106,10 +104,7 @@ export default function Nav() {
               this voice need about 620px of rule before they start colliding
               with the name. */}
           <nav aria-label="Sections" className="pointer-events-auto hidden lg:block">
-            <ul
-              className="flex items-center gap-1 px-1 transition-colors duration-500"
-              style={{ background: ink.plate }}
-            >
+            <ul className="flex items-center gap-1 transition-colors duration-500">
               {SECTIONS.map((s, i) => (
                 <li key={s}>
                   <button
@@ -131,7 +126,7 @@ export default function Nav() {
             onClick={() => setOpen(true)}
             aria-label="Open menu"
             className="pointer-events-auto -mr-3 flex min-h-11 min-w-11 cursor-pointer items-center justify-center border-0 bg-transparent px-3 py-2 transition-colors duration-500 lg:hidden"
-            style={{ color: ink.fg, background: ink.plate }}
+            style={{ color: ink.fg }}
           >
             <List size={22} weight="bold" aria-hidden="true" />
           </button>
