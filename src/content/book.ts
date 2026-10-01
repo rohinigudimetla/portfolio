@@ -54,13 +54,13 @@ export const entries: Entry[] = [
     ],
   },
   {
-    title: "Cher Digital Analytics",
+    title: "Early Stage Analytics Startup",
     kind: "Consulting",
     when: "2025",
     stack: ["Next.js", "Supabase", "Vercel"],
     links: [
-      { label: "Live site", href: "https://cher-digi-analytics.vercel.app" },
-      { label: "GitHub", href: "https://github.com/rohinigudimetla/cher-digi-analytics" },
+      { label: "Live site", href: "https://earlystage-analytics.vercel.app" },
+      { label: "GitHub", href: "https://github.com/rohinigudimetla/earlystage-digi-analytics" },
     ],
     detail: [
       "A client booking system. Confirming a slot sends Google Calendar OAuth2 to write the event, and Resend posts the confirmation to both the client and the consultant.",

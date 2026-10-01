@@ -64,9 +64,9 @@ PDF must be reachable without hunting.
 
 - `Rohini_Gudimetla_Resume_Blueprint.pdf` - the source of every factual claim, shipped to
   `/public` for download.
-- Live work: `cher-digi-analytics.vercel.app`, `world-salon.com`, `pocklib.site`.
+- Live work: `earlystage-analytics.vercel.app`, `world-salon.com`, `pocklib.site`.
 - Source: `github.com/rohinigudimetla/Pocket-Library`,
-  `github.com/rohinigudimetla/cher-digi-analytics`.
+  `github.com/rohinigudimetla/earlystage-digi-analytics`.
 - Contact, all approved for publication: email, phone, LinkedIn, GitHub.
 - No testimonials, no metrics beyond those stated in the resume, no client logos. None
   may be fabricated to fill a section.
